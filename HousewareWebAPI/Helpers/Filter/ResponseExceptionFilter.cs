@@ -3,7 +3,7 @@ using HousewareWebAPI.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace HousewareWebAPI.Helpers.Attribute
+namespace HousewareWebAPI.Helpers.Filter
 {
     public class HttpResponseExceptionFilter : IActionFilter
     {
@@ -11,12 +11,15 @@ namespace HousewareWebAPI.Helpers.Attribute
 
         public void OnActionExecuted(ActionExecutedContext context)
         {
-            var reponse = new Reponse(CodeTypes.Err_Exception, context.Exception.Message);
-            context.Result = new ObjectResult(reponse)
+            if (context.Exception != null)
             {
-                StatusCode = 400
-            };
-            context.ExceptionHandled = true;
+                var reponse = new Reponse(CodeTypes.Err_Exception, context.Exception.Message);
+                context.Result = new ObjectResult(reponse)
+                {
+                    StatusCode = 400
+                };
+                context.ExceptionHandled = true;
+            }
         }
     }
 }
