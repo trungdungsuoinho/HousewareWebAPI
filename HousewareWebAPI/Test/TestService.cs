@@ -1,8 +1,7 @@
-﻿using HousewareWebAPI.Models;
+﻿using HousewareWebAPI.Helpers.Common;
+using HousewareWebAPI.Helpers.Services;
+using HousewareWebAPI.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Test
 {
@@ -15,6 +14,18 @@ namespace HousewareWebAPI.Test
             if (a == 0)
             {
                 throw new Exception("Oke chưa!");
+            }
+            return reponse;
+        }
+
+        public static Reponse AddImageUrl(IImageService imageService, AddImageRequest model)
+        {
+            var reponse = new Reponse();
+            var image = imageService.UploadImage(model);
+            if (image != string.Empty)
+            {
+                reponse.SetCode(CodeTypes.Success);
+                reponse.SetResult(image);
             }
             return reponse;
         }
