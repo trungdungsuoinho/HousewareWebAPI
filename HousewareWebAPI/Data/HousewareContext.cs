@@ -10,8 +10,9 @@ namespace Houseware.WebAPI.Data
         }
 
         public DbSet<Classification> Classifications { get; set; }
+        public DbSet<Category> Categories { get; set; }
         //public DbSet<User> Users { get; set; }
-        //public DbSet<Category> Categories { get; set; }
+
         //public DbSet<Product> Products { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -20,6 +21,9 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Classification>().Property(c => c.Enable).HasDefaultValue(false);
             modelBuilder.Entity<Classification>().Property(c => c.Sort).HasDefaultValue(int.MaxValue);
 
+            // Category
+            modelBuilder.Entity<Category>().Property(c => c.Enable).HasDefaultValue(false);
+            modelBuilder.Entity<Category>().Property(c => c.Sort).HasDefaultValue(int.MaxValue);
 
             //// User
             //modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique(true);
@@ -27,8 +31,7 @@ namespace Houseware.WebAPI.Data
             //modelBuilder.Entity<User>().Property(u => u.VerifyEmail).HasDefaultValue(false);
 
 
-            //// Category
-            //modelBuilder.Entity<Category>().Property(c => c.Enable).HasDefaultValue(false);
+
 
             //// Product
             //modelBuilder.Entity<Product>().Property(c => c.Enable).HasDefaultValue(false);

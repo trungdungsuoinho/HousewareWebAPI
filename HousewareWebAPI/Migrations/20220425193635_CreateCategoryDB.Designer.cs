@@ -4,14 +4,16 @@ using Houseware.WebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HousewareWebAPI.Migrations
 {
     [DbContext(typeof(HousewareContext))]
-    partial class HousewareContextModelSnapshot : ModelSnapshot
+    [Migration("20220425193635_CreateCategoryDB")]
+    partial class CreateCategoryDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
