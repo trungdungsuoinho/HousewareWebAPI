@@ -2,13 +2,13 @@
 
 namespace HousewareWebAPI.Models
 {
-    public class Reponse
+    public class Response
     {
         public int ResultCode { get; set; }
         public string ResultDescription { get; set; }
         public object Result { get; set; }
 
-        public Reponse()
+        public Response()
         {
         }
 
@@ -23,7 +23,7 @@ namespace HousewareWebAPI.Models
             Result = value;
         }
 
-        public Reponse(CodeDescription code, object jsresult = null)
+        public Response(CodeDescription code, object jsresult = null)
         {
             ResultCode = code.ResultCode;
             ResultDescription = code.ResultDescription;
