@@ -33,19 +33,61 @@ namespace HousewareWebAPI.Controllers
             return Ok(response);
         }
 
-        //// GET: api/<ClassificationController>
-        //[HttpGet]
-        //public IActionResult Get()
-        //{
-        //    return new string[] { "value1", "value2" };
-        //}
+        /// <summary>
+        /// Get a Classification. API for client
+        /// </summary>
+        /// <param name="model"></param>
+        [HttpGet("id/{id}")]
+        public IActionResult GetClient([FromRoute] string id)
+        {
+            var response = _classificationService.GetClassification(id, true);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode == 999) return BadRequest(response);
+            return Ok(response);
+        }
 
-        //// GET api/<ClassificationController>/5
-        //[HttpGet("{id}")]
-        //public string Get(int id)
-        //{
-        //    return "value";
-        //}
+        /// <summary>
+        /// Get a Classification. API for admin
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="enable"></param>
+        /// <returns></returns>
+        [HttpGet("admin/id/{id}/{enable?}")]
+        public IActionResult GetAdmin([FromRoute] string id, bool? enable)
+        {
+            var response = _classificationService.GetClassification(id, enable);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode == 999) return BadRequest(response);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Get all Classification. API for client
+        /// </summary>
+        /// <param name="model"></param>
+        [HttpGet("all")]
+        public IActionResult GetAllClient()
+        {
+            var response = _classificationService.GetAllClassification(true);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode == 999) return BadRequest(response);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Get all Classification. API for admin
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="enable"></param>
+        /// <returns></returns>
+        [HttpGet("admin/all/{enable?}")]
+        public IActionResult GetAllAdmin([FromRoute] bool? enable)
+        {
+            var response = _classificationService.GetAllClassification(enable);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode == 999) return BadRequest(response);
+            return Ok(response);
+        }
 
         //// PUT api/<ClassificationController>/5
         //[HttpPut("{id}")]

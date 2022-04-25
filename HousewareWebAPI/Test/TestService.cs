@@ -7,9 +7,9 @@ namespace HousewareWebAPI.Test
 {
     public class TestService
     {
-        public static Reponse Test()
+        public static Response Test()
         {
-            var reponse = new Reponse();
+            var reponse = new Response();
             int a = 0;
             if (a == 0)
             {
@@ -18,9 +18,9 @@ namespace HousewareWebAPI.Test
             return reponse;
         }
 
-        public static Reponse AddImageUrl(IImageService imageService, AddImageRequest model)
+        public static Response AddImageUrl(IImageService imageService, AddImageRequest model)
         {
-            var reponse = new Reponse();
+            var reponse = new Response();
             var image = imageService.UploadImage(model);
             if (image != string.Empty)
             {

@@ -5,6 +5,7 @@ using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,11 +34,19 @@ namespace HousewareWebAPI
             services.Configure<AppSettings>(appSettingsSection);
             var appSettings = appSettingsSection.Get<AppSettings>();
 
+            // Enable custom validation with model state
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                options.SuppressModelStateInvalidFilter = true;
+            });
+
             services.AddDbContext<HousewareContext>(options => options.UseSqlServer(appSettings.DBConnectionString));
             services.AddControllers(options =>
             {
-                options.Filters.Add(new HttpResponseExceptionFilter());
+                options.Filters.Add(new ResponseValidationActionFilter());
+                options.Filters.Add(new ResponseExceptionActionFilter());
             });
+
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "HousewareWebAPI", Version = "v1" });
