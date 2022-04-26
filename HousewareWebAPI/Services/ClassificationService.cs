@@ -3,6 +3,7 @@ using Houseware.WebAPI.Entities;
 using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,15 +15,18 @@ namespace HousewareWebAPI.Services
         public Response AddClassification(AddClassificationRequest model);
         public Response GetClassification(string id, bool? enable = null);
         public Response GetAllClassification(bool? enable = null);
+        public Response UpdateClassification(string id, AddClassificationRequest model);
+        public Response DeleteClassification(string id);
+        //public Response ModifySort();
     }
     public class ClassificationService : IClassificationService
     {
         private readonly HousewareContext _context;
         private readonly IImageService _imageService;
 
-        private bool CheckExist(string id)
+        private Classification GetById(string id)
         {
-            return _context.Classifications.FirstOrDefault(c => c.ClassificationId == id) != null;
+            return _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper());
         }
 
         public ClassificationService(HousewareContext context, IImageService imageService)
@@ -36,7 +40,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                if (!CheckExist(model.ClassificationId))
+                if (GetById(model.ClassificationId) == null)
                 {
                     var classification = new Classification()
                     {
@@ -73,6 +77,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
+                id = id.ToUpper();
                 var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && (enable == null || c.Enable == enable));
                 if (classification == null)
                 {
@@ -106,7 +111,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                var classifications = _context.Classifications.Where(c => enable == null || c.Enable == enable).ToList();
+                var classifications = _context.Classifications.Where(c => enable == null || c.Enable == enable).OrderBy(c => c.Sort).ToList();
                 var result = new List<GetClassificationResponse>();
                 foreach(var c in classifications)
                 {
@@ -120,6 +125,72 @@ namespace HousewareWebAPI.Services
                 }
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(result);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response UpdateClassification(string id, AddClassificationRequest model)
+        {
+            var response = new Response();
+            try
+            {
+                model.ClassificationId = model.ClassificationId.ToUpper();
+                if (id.ToUpper() != model.ClassificationId)
+                {
+                    response.SetCode(CodeTypes.Err_IdNotMatch);
+                    response.SetResult("ClassificationId in URL doesn't match ClassificationId in model");
+                    return response;
+                }
+
+                var classification = GetById(model.ClassificationId);
+                if (classification != null)
+                {
+                    classification.Name = model.Name;
+                    classification.ImageMenu = _imageService.UploadImage(model.ImageMenu);
+                    classification.ImageBanner = model.ImageBanner != null ? _imageService.UploadImage(model.ImageBanner) : null;
+                    classification.Story = model.Story?.ToString();
+                    classification.Enable = model.Enable;
+
+                    _context.Entry(classification).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    response.SetCode(CodeTypes.Success);
+                }
+                else
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("There not exists a Classification with such ClassificationId");
+                }
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response DeleteClassification(string id)
+        {
+            var response = new Response();
+            try
+            {
+                var classification = GetById(id);
+                if (classification != null)
+                {
+                    _context.Entry(classification).State = EntityState.Deleted;
+                    _context.SaveChanges();
+                    response.SetCode(CodeTypes.Success);
+                    return response;
+                }
+                response.SetCode(CodeTypes.Err_NotExist);
+                response.SetResult("There not exists a Classification with such ClassificationId");
                 return response;
             }
             catch (Exception e)

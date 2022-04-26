@@ -4,7 +4,7 @@ using System;
 
 namespace HousewareWebAPI.Test
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class TestResponseExceptionFilterController : ControllerBase
     {
