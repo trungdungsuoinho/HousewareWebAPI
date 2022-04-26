@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HousewareWebAPI.Test
 {
-    [Route("api/[controller]")]
+    [Route("api/v1/[controller]")]
     [ApiController]
     public class TestImageServiceController : ControllerBase
     {
