@@ -44,7 +44,7 @@ namespace HousewareWebAPI.Services
                 {
                     var classification = new Classification()
                     {
-                        ClassificationId = model.ClassificationId.ToUpper(),
+                        ClassificationId = model.ClassificationId,
                         Name = model.Name,
                         ImageMenu = _imageService.UploadImage(model.ImageMenu),
                         ImageBanner = model.ImageBanner != null ? _imageService.UploadImage(model.ImageBanner) : null,
@@ -152,8 +152,23 @@ namespace HousewareWebAPI.Services
                 if (classification != null)
                 {
                     classification.Name = model.Name;
-                    classification.ImageMenu = _imageService.UploadImage(model.ImageMenu);
-                    classification.ImageBanner = model.ImageBanner != null ? _imageService.UploadImage(model.ImageBanner) : null;
+                    
+                    if(!model.ImageMenu.IsUrl || classification.ImageMenu != model.ImageMenu.Content)
+                    {
+                        classification.ImageMenu = _imageService.UploadImage(model.ImageMenu);
+                    }
+
+                    if (model.ImageBanner != null)
+                    {
+                        if (!model.ImageBanner.IsUrl || classification.ImageBanner != model.ImageBanner.Content) 
+                        {
+                            classification.ImageBanner = _imageService.UploadImage(model.ImageBanner);
+                        } 
+                    }
+                    else
+                    {
+                        classification.ImageBanner = null;
+                    }
                     classification.Story = model.Story?.ToString();
                     classification.Enable = model.Enable;
 
