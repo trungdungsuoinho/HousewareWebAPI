@@ -12,11 +12,13 @@ namespace HousewareWebAPI.Services
 {
     public interface IClassificationService
     {
-        public Response AddClassification(AddClassificationRequest model);
-        public Response GetClassification(string id, bool? enable = null);
-        public Response GetAllClassification(bool? enable = null);
-        public Response UpdateClassification(string id, AddClassificationRequest model);
-        public Response DeleteClassification(string id);
+        public Response GetClassification(string id);
+        public Response GetAllClassification();
+        public Response GetClassAdmin(string id, bool? enable = null);
+        public Response GetAllClassAdmin(bool? enable = null);
+        public Response AddClassAdmin(AddClassAdminRequest model);
+        public Response UpdateClassAdmin(string id, AddClassAdminRequest model);
+        public Response DeleteClassAdmin(string id);
         //public Response ModifySort();
     }
     public class ClassificationService : IClassificationService
@@ -35,7 +37,142 @@ namespace HousewareWebAPI.Services
             _imageService = imageService;
         }
 
-        public Response AddClassification(AddClassificationRequest model)
+        public Response GetClassification(string id)
+        {
+            var response = new Response();
+            try
+            {
+                id = id.ToUpper();
+                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && c.Enable == true);
+                if (classification == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotFound);
+                    response.SetResult("No Classification was found for this ClassificationId");
+                }
+                else
+                {
+                    _context.Entry(classification).Collection(c => c.Categories).Load();
+                    var result = new GetClassificationResponse()
+                    {
+                        ClassificationId = classification.ClassificationId,
+                        Name = classification.Name,
+                        ImageBanner = classification.ImageBanner,
+                        Categories = classification.Categories.Select(c => new CatInGetClass {
+                            CategoryId = c.CategoryId,
+                            Name = c.Name,
+                            Slogan = c.Slogan,
+                            Image = c.Image
+                        }).ToList()
+                    };
+                    response.SetCode(CodeTypes.Success);
+                    response.SetResult(result);
+                }
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response GetAllClassification()
+        {
+            var response = new Response();
+            try
+            {
+                var classifications = _context.Classifications.Where(c => c.Enable == true).OrderBy(c => c.Sort).ToList();
+                var result = new List<GetAllClassificationResponse>();
+                foreach(var classification in classifications)
+                {
+                    _context.Entry(classification).Collection(c => c.Categories).Load();
+                    result.Add(new GetAllClassificationResponse()
+                    {
+                        ClassificationId = classification.ClassificationId,
+                        Name = classification.Name,
+                        ImageMenu = classification.ImageMenu,
+                        Categories = classification.Categories.Select(c => new CatInGetAllClass { CategoryId = c.CategoryId, Name = c.Name }).ToList()
+                    });
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(result);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response GetClassAdmin(string id, bool? enable = null)
+        {
+            var response = new Response();
+            try
+            {
+                id = id.ToUpper();
+                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && (enable == null || c.Enable == enable));
+                if (classification == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotFound);
+                    response.SetResult("No Classification was found for this ClassificationId");
+                }
+                else
+                {
+                    var result = new GetClassAdminResponse()
+                    {
+                        ClassificationId = classification.ClassificationId,
+                        Name = classification.Name,
+                        ImageMenu = classification.ImageMenu,
+                        ImageBanner = classification.ImageBanner,
+                        Enable = classification.Enable
+                    };
+                    response.SetCode(CodeTypes.Success);
+                    response.SetResult(result);
+                }
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response GetAllClassAdmin(bool? enable = null)
+        {
+            var response = new Response();
+            try
+            {
+                var classifications = _context.Classifications.Where(c => enable == null || c.Enable == enable).OrderBy(c => c.Sort).ToList();
+                var result = new List<GetClassAdminResponse>();
+                foreach (var classification in classifications)
+                {
+                    result.Add(new GetClassAdminResponse()
+                    {
+                        ClassificationId = classification.ClassificationId,
+                        Name = classification.Name,
+                        ImageMenu = classification.ImageMenu,
+                        ImageBanner = classification.ImageBanner,
+                        Enable = classification.Enable
+                    });
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(result);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response AddClassAdmin(AddClassAdminRequest model)
         {
             var response = new Response();
             try
@@ -72,70 +209,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response GetClassification(string id, bool? enable = null)
-        {
-            var response = new Response();
-            try
-            {
-                id = id.ToUpper();
-                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && (enable == null || c.Enable == enable));
-                if (classification == null)
-                {
-                    response.SetCode(CodeTypes.Err_NotFound);
-                    response.SetResult("No Classification was found for this ClassificationId");
-                }
-                else
-                {
-                    var result = new GetClassificationResponse()
-                    {
-                        ClassificationId = classification.ClassificationId,
-                        Name = classification.Name,
-                        ImageMenu = classification.ImageMenu,
-                        ImageBanner = classification.ImageBanner
-                    };
-                    response.SetCode(CodeTypes.Success);
-                    response.SetResult(result);
-                }
-                return response;
-            }
-            catch (Exception e)
-            {
-                response.SetCode(CodeTypes.Err_Exception);
-                response.SetResult(e.Message);
-                return response;
-            }
-        }
-
-        public Response GetAllClassification(bool? enable = null)
-        {
-            var response = new Response();
-            try
-            {
-                var classifications = _context.Classifications.Where(c => enable == null || c.Enable == enable).OrderBy(c => c.Sort).ToList();
-                var result = new List<GetClassificationResponse>();
-                foreach(var c in classifications)
-                {
-                    result.Add(new GetClassificationResponse()
-                    {
-                        ClassificationId = c.ClassificationId,
-                        Name = c.Name,
-                        ImageMenu = c.ImageMenu,
-                        ImageBanner = c.ImageBanner
-                    });
-                }
-                response.SetCode(CodeTypes.Success);
-                response.SetResult(result);
-                return response;
-            }
-            catch (Exception e)
-            {
-                response.SetCode(CodeTypes.Err_Exception);
-                response.SetResult(e.Message);
-                return response;
-            }
-        }
-
-        public Response UpdateClassification(string id, AddClassificationRequest model)
+        public Response UpdateClassAdmin(string id, AddClassAdminRequest model)
         {
             var response = new Response();
             try
@@ -191,7 +265,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response DeleteClassification(string id)
+        public Response DeleteClassAdmin(string id)
         {
             var response = new Response();
             try

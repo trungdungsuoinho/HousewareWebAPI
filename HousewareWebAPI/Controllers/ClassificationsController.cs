@@ -18,11 +18,12 @@ namespace HousewareWebAPI.Controllers
         /// <summary>
         /// Get a Classification. API for client
         /// </summary>
-        /// <param name="model"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [HttpGet("{id}")]
         public IActionResult Get([FromRoute] string id)
         {
-            var response = _classificationService.GetClassification(id, true);
+            var response = _classificationService.GetClassification(id);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
@@ -31,11 +32,11 @@ namespace HousewareWebAPI.Controllers
         /// <summary>
         /// Get all Classification. API for client
         /// </summary>
-        /// <param name="model"></param>
+        /// <returns></returns>
         [HttpGet]
         public IActionResult GetAll()
         {
-            var response = _classificationService.GetAllClassification(true);
+            var response = _classificationService.GetAllClassification();
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);

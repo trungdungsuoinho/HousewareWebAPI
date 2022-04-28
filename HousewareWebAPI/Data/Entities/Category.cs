@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace Houseware.WebAPI.Entities
 {
@@ -12,6 +13,7 @@ namespace Houseware.WebAPI.Entities
         public string Slogan { get; set; }
         [MyRequired]
         public string Image { get; set; }
+        public string Video { get; set; }
         /// <summary>
         /// Type: JArray String. Property of a item: head, content
         /// </summary>
@@ -20,6 +22,7 @@ namespace Houseware.WebAPI.Entities
 
         // Navigation
         public string ClassificationId { get; set; }
+        [JsonIgnore]
         public virtual Classification Classification { get; set; }
     }
 }

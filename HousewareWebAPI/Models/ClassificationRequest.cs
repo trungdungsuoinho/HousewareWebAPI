@@ -3,7 +3,7 @@ using Newtonsoft.Json.Linq;
 
 namespace HousewareWebAPI.Models
 {
-    public class AddClassificationRequest
+    public class AddClassAdminRequest
     {
         [MyRequired]
         public string ClassificationId { get; set; }
