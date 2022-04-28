@@ -27,27 +27,48 @@ namespace HousewareWebAPI.Helpers.Services
 
         private void InitCloudinary()
         {
-            var account = new Account(_appSettings.ImageCloudName, _appSettings.ImageAPIKey, _appSettings.ImageAPISecret);
-            _cloudinary = new Cloudinary(account);
-            _cloudinary.Api.Secure = true;
+            try
+            {
+                var account = new Account(_appSettings.ImageCloudName, _appSettings.ImageAPIKey, _appSettings.ImageAPISecret);
+                _cloudinary = new Cloudinary(account);
+                _cloudinary.Api.Secure = true;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Can't init Cloudinary! " + e.Message);
+            }
         }
 
         private static Stream Base64ToStream(string base64)
         {
-            return new MemoryStream(Convert.FromBase64String(base64));
+            try
+            {
+                return new MemoryStream(Convert.FromBase64String(base64));
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Can't convert this image form base64 to stream! " + e.Message);
+            }
         }
 
         private static bool CheckImageUrl(string url)
         {
-            var result = false;
-            var request = (HttpWebRequest)WebRequest.Create(url);
-            request.Method = "HEAD";
-            using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+            try
             {
-                result = response.StatusCode == HttpStatusCode.OK && response.Headers["Content-Type"].StartsWith("image/");
-                response.Dispose();
+                var result = false;
+                var request = (HttpWebRequest)WebRequest.Create(url);
+                request.Method = "HEAD";
+                using (HttpWebResponse response = (HttpWebResponse)request.GetResponse())
+                {
+                    result = response.StatusCode == HttpStatusCode.OK && response.Headers["Content-Type"].StartsWith("image/");
+                    response.Dispose();
+                }
+                return result;
             }
-            return result;
+            catch (Exception e)
+            {
+                throw new Exception("The url of the image is not valid! " + e.Message);
+            }
         }
 
         public string UploadImage(AddImageRequest model)
