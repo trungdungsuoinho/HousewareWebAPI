@@ -4,14 +4,16 @@ using Houseware.WebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HousewareWebAPI.Migrations
 {
     [DbContext(typeof(HousewareContext))]
-    partial class HousewareContextModelSnapshot : ModelSnapshot
+    [Migration("20220429030018_CreateReferProToCat")]
+    partial class CreateReferProToCat
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -147,9 +149,7 @@ namespace HousewareWebAPI.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<int>("Sort")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(2147483647);
+                        .HasColumnType("int");
 
                     b.Property<int>("View")
                         .ValueGeneratedOnAdd()
@@ -167,8 +167,7 @@ namespace HousewareWebAPI.Migrations
                 {
                     b.HasOne("HousewareWebAPI.Data.Entities.Classification", "Classification")
                         .WithMany("Categories")
-                        .HasForeignKey("ClassificationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClassificationId");
 
                     b.Navigation("Classification");
                 });
@@ -177,8 +176,7 @@ namespace HousewareWebAPI.Migrations
                 {
                     b.HasOne("HousewareWebAPI.Data.Entities.Category", "Category")
                         .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("CategoryId");
 
                     b.Navigation("Category");
                 });

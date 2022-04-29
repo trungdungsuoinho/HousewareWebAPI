@@ -1,5 +1,5 @@
 ﻿using Houseware.WebAPI.Data;
-using Houseware.WebAPI.Entities;
+using HousewareWebAPI.Data.Entities;
 using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;

@@ -1,8 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -11,6 +9,7 @@ namespace HousewareWebAPI.Data.Entities
         public string ProductId { get; set; }
         [MyRequired]
         public string Name { get; set; }
+        public int Sort { get; set; }
         [MyRequired]
         public string Avatar { get; set; }
         /// <summary>
@@ -35,6 +34,13 @@ namespace HousewareWebAPI.Data.Entities
         /// JsonString
         /// </summary>
         public string Performance { get; set; }
+        public DateTime CreateDate { get; set; }
+        public DateTime ModifyDate { get; set; }
         public bool Enable { get; set; }
+
+        // Navigation
+        public string CategoryId { get; set; }
+        [JsonIgnore]
+        public virtual Category Category { get; set; }
     }
 }

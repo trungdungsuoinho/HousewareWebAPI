@@ -4,14 +4,16 @@ using Houseware.WebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HousewareWebAPI.Migrations
 {
     [DbContext(typeof(HousewareContext))]
-    partial class HousewareContextModelSnapshot : ModelSnapshot
+    [Migration("20220429024907_CreateProductDB")]
+    partial class CreateProductDB
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -104,9 +106,6 @@ namespace HousewareWebAPI.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("CategoryId")
-                        .HasColumnType("nvarchar(450)");
-
                     b.Property<DateTime>("CreateDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
@@ -147,9 +146,7 @@ namespace HousewareWebAPI.Migrations
                         .HasDefaultValue(0);
 
                     b.Property<int>("Sort")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(2147483647);
+                        .HasColumnType("int");
 
                     b.Property<int>("View")
                         .ValueGeneratedOnAdd()
@@ -158,8 +155,6 @@ namespace HousewareWebAPI.Migrations
 
                     b.HasKey("ProductId");
 
-                    b.HasIndex("CategoryId");
-
                     b.ToTable("Products");
                 });
 
@@ -167,25 +162,9 @@ namespace HousewareWebAPI.Migrations
                 {
                     b.HasOne("HousewareWebAPI.Data.Entities.Classification", "Classification")
                         .WithMany("Categories")
-                        .HasForeignKey("ClassificationId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClassificationId");
 
                     b.Navigation("Classification");
-                });
-
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.Product", b =>
-                {
-                    b.HasOne("HousewareWebAPI.Data.Entities.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.Navigation("Category");
-                });
-
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.Category", b =>
-                {
-                    b.Navigation("Products");
                 });
 
             modelBuilder.Entity("HousewareWebAPI.Data.Entities.Classification", b =>
