@@ -30,8 +30,8 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Product>().Property(p => p.Sort).HasDefaultValue(int.MaxValue);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasDefaultValue(0);
             modelBuilder.Entity<Product>().Property(p => p.View).HasDefaultValue(0);
-            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE()");
-            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETDATE()");
+            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("DATEADD(hh, 7, GETUTCDATE())");
+            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("DATEADD(hh, 7, GETUTCDATE())");
             modelBuilder.Entity<Product>().Property(p => p.Enable).HasDefaultValue(false);
             modelBuilder.Entity<Product>().HasOne(p => p.Category).WithMany(p => p.Products).OnDelete(DeleteBehavior.SetNull);
 
