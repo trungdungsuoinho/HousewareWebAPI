@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Houseware.WebAPI.Entities
+namespace HousewareWebAPI.Data.Entities
 {
     public class Category
     {
         public string CategoryId { get; set; }
         [MyRequired]
         public string Name { get; set; }
-        public int? Sort { get; set; }
+        public int Sort { get; set; }
         public string Slogan { get; set; }
         [MyRequired]
         public string Image { get; set; }
@@ -24,5 +24,6 @@ namespace Houseware.WebAPI.Entities
         public string ClassificationId { get; set; }
         [JsonIgnore]
         public virtual Classification Classification { get; set; }
+        public virtual ICollection<Product> Products { get; set; }
     }
 }

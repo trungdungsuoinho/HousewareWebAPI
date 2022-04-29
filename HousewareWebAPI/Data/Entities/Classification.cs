@@ -1,14 +1,14 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System.Collections.Generic;
 
-namespace Houseware.WebAPI.Entities
+namespace HousewareWebAPI.Data.Entities
 {
     public class Classification
     {
         public string ClassificationId { get; set; }
         [MyRequired]
         public string Name { get; set; }
-        public int? Sort { get; set; }
+        public int Sort { get; set; }
         [MyRequired]
         public string ImageMenu { get; set; }
         public string ImageBanner { get; set; }
