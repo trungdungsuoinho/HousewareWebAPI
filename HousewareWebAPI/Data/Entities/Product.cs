@@ -19,7 +19,7 @@ namespace HousewareWebAPI.Data.Entities
         public int Price { get; set; }
         public int View { get; set; }
         /// <summary>
-        /// Type: JArray String. Property of a item: image
+        /// Type: JArray String. Property of a item: highlight
         /// </summary>
         public string Highlights { get; set; }
         /// <summary>

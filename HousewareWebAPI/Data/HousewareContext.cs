@@ -24,16 +24,14 @@ namespace Houseware.WebAPI.Data
             // Category
             modelBuilder.Entity<Category>().Property(c => c.Sort).HasDefaultValue(int.MaxValue);
             modelBuilder.Entity<Category>().Property(c => c.Enable).HasDefaultValue(false);
-            modelBuilder.Entity<Category>().HasOne(c => c.Classification).WithMany(c => c.Categories).OnDelete(DeleteBehavior.SetNull);
 
             // Product
             modelBuilder.Entity<Product>().Property(p => p.Sort).HasDefaultValue(int.MaxValue);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasDefaultValue(0);
             modelBuilder.Entity<Product>().Property(p => p.View).HasDefaultValue(0);
-            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("DATEADD(hh, 7, GETUTCDATE())");
-            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("DATEADD(hh, 7, GETUTCDATE())");
+            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Product>().Property(p => p.Enable).HasDefaultValue(false);
-            modelBuilder.Entity<Product>().HasOne(p => p.Category).WithMany(p => p.Products).OnDelete(DeleteBehavior.SetNull);
 
 
             //// User
