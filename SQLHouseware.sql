@@ -75,42 +75,6 @@ GO
 
 
 
--- Trigger set false property Enable when primay key is setnull
-GO
-DROP TRIGGER enable_Category_When_ClassificationId_Null;
-GO
-CREATE TRIGGER enable_Category_When_ClassificationId_Null
-ON Categories
-AFTER UPDATE AS
-BEGIN
-	DECLARE @categoryId NVARCHAR(450);
-	SELECT @categoryId = i.CategoryId FROM inserted i;
-	IF (SELECT i.ClassificationId FROM inserted i) = NULL AND (SELECT d.Enable FROM deleted d) = 1
-	BEGIN
-		UPDATE Categories SET Enable = 0 WHERE CategoryId = @categoryId;
-	END
-END
-GO
-
-GO
-DROP TRIGGER enable_Product_When_CategoryId_Null;
-GO
-CREATE TRIGGER enable_Product_When_CategoryId_Null
-ON Products
-AFTER UPDATE AS
-BEGIN
-	DECLARE @productId NVARCHAR(450);
-	SELECT @productId = i.ProductId FROM inserted i;
-	IF (SELECT i.CategoryId FROM inserted i) = NULL AND (SELECT d.Enable FROM deleted d) = 1
-	BEGIN
-		UPDATE Products SET Enable = 0 WHERE ProductId = @productId;
-	END
-END
-GO
-
-SELECT DATEADD(hh, 7, GETUTCDATE());
-
-
 -- Trigger set value for ModifyDate of Product
 GO
 DROP TRIGGER set_ModifyDate_Product;
@@ -119,7 +83,8 @@ CREATE TRIGGER set_ModifyDate_Product
 ON Products
 AFTER UPDATE AS
 BEGIN
-	UPDATE Products SET ModifyDate = DATEADD(hh, 7, GETUTCDATE())
+	UPDATE Products SET ModifyDate = (GETDATE() AT TIME ZONE 'N. Central Asia Standard Time')
 	WHERE ProductId = (SELECT i.ProductId FROM inserted i);
 END
 GO
+

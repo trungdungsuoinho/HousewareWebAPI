@@ -4,14 +4,16 @@ using Houseware.WebAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace HousewareWebAPI.Migrations
 {
     [DbContext(typeof(HousewareContext))]
-    partial class HousewareContextModelSnapshot : ModelSnapshot
+    [Migration("20220501174458_ModyfiTimeZoneAndRefSetNull")]
+    partial class ModyfiTimeZoneAndRefSetNull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -163,46 +165,6 @@ namespace HousewareWebAPI.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.ProductSpecification", b =>
-                {
-                    b.Property<string>("ProductId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("SpecificationId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("ProductId", "SpecificationId");
-
-                    b.HasIndex("SpecificationId");
-
-                    b.ToTable("ProductSpecification");
-                });
-
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.Specification", b =>
-                {
-                    b.Property<string>("SpecificationId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Sort")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(2147483647);
-
-                    b.HasKey("SpecificationId");
-
-                    b.ToTable("Specifications");
-                });
-
             modelBuilder.Entity("HousewareWebAPI.Data.Entities.Category", b =>
                 {
                     b.HasOne("HousewareWebAPI.Data.Entities.Classification", "Classification")
@@ -221,25 +183,6 @@ namespace HousewareWebAPI.Migrations
                     b.Navigation("Category");
                 });
 
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.ProductSpecification", b =>
-                {
-                    b.HasOne("HousewareWebAPI.Data.Entities.Product", "Product")
-                        .WithMany("ProductSpecifications")
-                        .HasForeignKey("ProductId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("HousewareWebAPI.Data.Entities.Specification", "Specification")
-                        .WithMany("ProductSpecifications")
-                        .HasForeignKey("SpecificationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Product");
-
-                    b.Navigation("Specification");
-                });
-
             modelBuilder.Entity("HousewareWebAPI.Data.Entities.Category", b =>
                 {
                     b.Navigation("Products");
@@ -248,16 +191,6 @@ namespace HousewareWebAPI.Migrations
             modelBuilder.Entity("HousewareWebAPI.Data.Entities.Classification", b =>
                 {
                     b.Navigation("Categories");
-                });
-
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.Product", b =>
-                {
-                    b.Navigation("ProductSpecifications");
-                });
-
-            modelBuilder.Entity("HousewareWebAPI.Data.Entities.Specification", b =>
-                {
-                    b.Navigation("ProductSpecifications");
                 });
 #pragma warning restore 612, 618
         }

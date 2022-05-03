@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
@@ -19,7 +20,7 @@ namespace HousewareWebAPI.Data.Entities
         public int Price { get; set; }
         public int View { get; set; }
         /// <summary>
-        /// Type: JArray String. Property of a item: image
+        /// Type: JArray String. Property of a item: highlight
         /// </summary>
         public string Highlights { get; set; }
         /// <summary>
@@ -42,5 +43,6 @@ namespace HousewareWebAPI.Data.Entities
         public string CategoryId { get; set; }
         [JsonIgnore]
         public virtual Category Category { get; set; }
+        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
     }
 }
