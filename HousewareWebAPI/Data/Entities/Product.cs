@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
@@ -42,5 +43,6 @@ namespace HousewareWebAPI.Data.Entities
         public string CategoryId { get; set; }
         [JsonIgnore]
         public virtual Category Category { get; set; }
+        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
     }
 }

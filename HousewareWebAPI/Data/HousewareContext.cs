@@ -12,6 +12,8 @@ namespace Houseware.WebAPI.Data
         public DbSet<Classification> Classifications { get; set; }
         public DbSet<Category> Categories { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Specification> Specifications { get; set; }
+
         //public DbSet<User> Users { get; set; }
 
 
@@ -33,6 +35,11 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Product>().Property(p => p.Enable).HasDefaultValue(false);
 
+            // Specification
+            modelBuilder.Entity<Specification>().Property(p => p.Sort).HasDefaultValue(int.MaxValue);
+
+            // ProductSpecification
+            modelBuilder.Entity<ProductSpecification>().HasKey(ps => new { ps.ProductId, ps.SpecificationId });
 
             //// User
             //modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique(true);
