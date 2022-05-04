@@ -38,6 +38,19 @@ BEGIN
 END
 GO
 
+GO
+DROP TRIGGER upper_SpecificationId;
+GO
+CREATE TRIGGER upper_SpecificationId
+ON Specifications
+AFTER INSERT AS
+BEGIN
+	DECLARE @specificationId NVARCHAR(450);
+	SELECT @specificationId = i.SpecificationId FROM inserted i;
+	UPDATE Specifications SET SpecificationId = UPPER(@specificationId) WHERE SpecificationId = @specificationId;
+END
+GO
+
 
 
 --- Trigger set false for property enable cascase
@@ -88,3 +101,8 @@ BEGIN
 END
 GO
 
+
+
+SELECT	*
+FROM	sys.messages
+WHERE	message_id BETWEEN 13000 AND 49999;
