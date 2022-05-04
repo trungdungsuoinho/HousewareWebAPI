@@ -13,6 +13,6 @@ namespace HousewareWebAPI.Models
         public AddImageRequest ImageMenu { get; set; }
         public AddImageRequest ImageBanner { get; set; }
         public JArray Story { get; set; }
-        public bool Enable { get; set; } = false;
+        public bool? Enable { get; set; }
     }
 }
