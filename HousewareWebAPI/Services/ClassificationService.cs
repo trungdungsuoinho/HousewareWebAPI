@@ -186,7 +186,7 @@ namespace HousewareWebAPI.Services
                         ImageMenu = _imageService.UploadImage(model.ImageMenu),
                         ImageBanner = model.ImageBanner != null ? _imageService.UploadImage(model.ImageBanner) : null,
                         Story = model.Story?.ToString(),
-                        Enable = model.Enable
+                        Enable = model.Enable == true
                     };
 
                     _context.Classifications.Add(classification);
@@ -214,8 +214,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                model.ClassificationId = model.ClassificationId.ToUpper();
-                if (id.ToUpper() != model.ClassificationId)
+                if (string.Compare(id, model.ClassificationId, true) != 0)
                 {
                     response.SetCode(CodeTypes.Err_IdNotMatch);
                     response.SetResult("ClassificationId in URL doesn't match ClassificationId in model");
@@ -244,7 +243,10 @@ namespace HousewareWebAPI.Services
                         classification.ImageBanner = null;
                     }
                     classification.Story = model.Story?.ToString();
-                    classification.Enable = model.Enable;
+                    if (model.Enable != null)
+                    {
+                        classification.Enable = model.Enable == true;
+                    }
 
                     _context.Entry(classification).State = EntityState.Modified;
                     _context.SaveChanges();
