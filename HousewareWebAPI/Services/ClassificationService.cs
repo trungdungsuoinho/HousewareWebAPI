@@ -19,7 +19,7 @@ namespace HousewareWebAPI.Services
         public Response AddClassAdmin(AddClassAdminRequest model);
         public Response UpdateClassAdmin(string id, AddClassAdminRequest model);
         public Response DeleteClassAdmin(string id);
-        //public Response ModifySort();
+        public Response ModifySort(List<string> ids);
     }
     public class ClassificationService : IClassificationService
     {
@@ -290,6 +290,22 @@ namespace HousewareWebAPI.Services
                 response.SetResult(e.Message);
                 return response;
             }
+        }
+
+        public Response ModifySort(List<string> ids)
+        {
+            var response = new Response();
+
+            var classifications = _context.Classifications.ToList();            
+            foreach(var classification in classifications)
+            {
+                var id = ids.Where(i => i == classification.ClassificationId).FirstOrDefault();
+                classification.Sort = id != null ? ids.IndexOf(id) : int.MaxValue;
+                _context.Entry(classification).State = EntityState.Modified;
+            }
+            _context.SaveChanges();
+            response.SetCode(CodeTypes.Success);
+            return response;
         }
     }
 }

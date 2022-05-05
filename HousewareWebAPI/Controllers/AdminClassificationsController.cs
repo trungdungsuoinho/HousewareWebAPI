@@ -2,6 +2,7 @@
 using HousewareWebAPI.Models;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 
 namespace HousewareWebAPI.Controllers
 {
@@ -82,6 +83,20 @@ namespace HousewareWebAPI.Controllers
         public IActionResult Delete([FromRoute] string id)
         {
             var response = _classificationService.DeleteClassAdmin(id);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Modify Sort of Classifications
+        /// </summary>
+        /// <param name="ids"></param>
+        /// <returns></returns>
+        [HttpPut("modifysort")]
+        public IActionResult ModifySort([FromRoute] List<string> ids)
+        {
+            var response = _classificationService.ModifySort(ids);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
