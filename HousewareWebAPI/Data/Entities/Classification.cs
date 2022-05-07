@@ -19,6 +19,6 @@ namespace HousewareWebAPI.Data.Entities
         public bool Enable { get; set; }
 
         // Navigation
-        public virtual ICollection<Category> Categories { get; set; }
+        public ICollection<Category> Categories { get; set; }
     }
 }

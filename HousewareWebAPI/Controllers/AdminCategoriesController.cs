@@ -1,12 +1,7 @@
 ﻿using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Models;
 using HousewareWebAPI.Services;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Controllers
 {
@@ -102,6 +97,20 @@ namespace HousewareWebAPI.Controllers
         public IActionResult Delete([FromRoute] string id)
         {
             var response = _categoryService.DeleteCatAdmin(id);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        /// <summary>
+        /// Modify Sort of Categories
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
+        [HttpPut("modifysort")]
+        public IActionResult ModifySort([FromBody] ModifySortCatAdminRequest model)
+        {
+            var response = _categoryService.ModifySort(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);

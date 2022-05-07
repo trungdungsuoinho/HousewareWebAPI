@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using System.Collections.Generic;
 
 namespace HousewareWebAPI.Models
 {
@@ -21,7 +21,8 @@ namespace HousewareWebAPI.Models
         public string CategoryId { get; set; }
         public string Name { get; set; }
         //public string Video { get; set; }
-        public JArray Advantage { get; set; }
+        public List<Advantage> Advantages { get; set; }
+        public List<ProInGetCat> Products { get; set; }
     }
 
     public class GetCatAdminResponse
@@ -31,7 +32,7 @@ namespace HousewareWebAPI.Models
         public string Slogan { get; set; }
         public string Image { get; set; }
         //public string Video { get; set; }
-        public JArray Advantage { get; set; }
+        public List<Advantage> Advantages { get; set; }
         public bool Enable { get; set; }
         public string ClassificationId { get; set; }
     }

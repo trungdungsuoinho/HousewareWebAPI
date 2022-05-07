@@ -4,6 +4,7 @@ using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,7 @@ namespace HousewareWebAPI.Services
 {
     public interface ICategoryService
     {
+        public Category GetById(string id);
         public Response GetCategory(string id);
         public Response GetCatAdmin(string id, bool? enable = null);
         public Response GetAllCatAdmin(bool? enable = null);
@@ -20,23 +22,25 @@ namespace HousewareWebAPI.Services
         public Response AddCatAdmin(AddCatAdminRequest model);
         public Response UpdateCatAdmin(string id, AddCatAdminRequest model);
         public Response DeleteCatAdmin(string id);
-        //public Response ModifySort();
+        public Response ModifySort(ModifySortCatAdminRequest model);
     }
 
     public class CategoryService : ICategoryService
     {
         private readonly HousewareContext _context;
         private readonly IImageService _imageService;
+        private readonly IClassificationService _classificationService;
 
-        private Category GetById(string id)
-        {
-            return _context.Categories.FirstOrDefault(c => c.CategoryId == id.ToUpper());
-        }
-
-        public CategoryService(HousewareContext context, IImageService imageService)
+        public CategoryService(HousewareContext context, IImageService imageService, IClassificationService classificationService)
         {
             _context = context;
             _imageService = imageService;
+            _classificationService = classificationService;
+        }
+
+        public Category GetById(string id)
+        {
+            return _context.Categories.FirstOrDefault(c => c.CategoryId == id.ToUpper());
         }
 
         public Response GetCategory(string id)
@@ -44,8 +48,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                id = id.ToUpper();
-                var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id && c.Enable == true);
+                var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id.ToUpper() && c.Enable == true);
                 if (category == null)
                 {
                     response.SetCode(CodeTypes.Err_NotFound);
@@ -53,11 +56,19 @@ namespace HousewareWebAPI.Services
                 }
                 else
                 {
+                    _context.Entry(category).Collection(c => c.Products).Load();
                     var result = new GetCategoryResponse()
                     {
                         CategoryId = category.CategoryId,
                         Name = category.Name,
-                        Advantage = category.Advantage != null ? JArray.Parse(category.Advantage) : null
+                        Advantages = JsonConvert.DeserializeObject<List<Advantage>>(category.Advantage),
+                        Products = category.Products.OrderBy(c => c.Sort).Select(c => new ProInGetCat
+                        {
+                            ProductId = c.ProductId,
+                            Name = c.Name,
+                            Avatar = c.Avatar,
+                            Price = c.Price
+                        }).ToList()
                     };
                     response.SetCode(CodeTypes.Success);
                     response.SetResult(result);
@@ -77,8 +88,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                id = id.ToUpper();
-                var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id && (enable == null || c.Enable == enable));
+                var category = _context.Categories.FirstOrDefault(c => c.CategoryId == id.ToUpper() && (enable == null || c.Enable == enable));
                 if (category == null)
                 {
                     response.SetCode(CodeTypes.Err_NotFound);
@@ -92,7 +102,7 @@ namespace HousewareWebAPI.Services
                         Name = category.Name,
                         Slogan = category.Slogan,
                         Image = category.Image,
-                        Advantage = category.Advantage != null ? JArray.Parse(category.Advantage) : null,
+                        Advantages = JsonConvert.DeserializeObject<List<Advantage>>(category.Advantage),
                         Enable = category.Enable,
                         ClassificationId = category.ClassificationId
                     };
@@ -124,7 +134,7 @@ namespace HousewareWebAPI.Services
                         Name = category.Name,
                         Slogan = category.Slogan,
                         Image = category.Image,
-                        Advantage = category.Advantage != null ? JArray.Parse(category.Advantage) : null,
+                        Advantages = JsonConvert.DeserializeObject<List<Advantage>>(category.Advantage),
                         Enable = category.Enable,
                         ClassificationId = category.ClassificationId
                     });
@@ -156,7 +166,7 @@ namespace HousewareWebAPI.Services
                         Name = category.Name,
                         Slogan = category.Slogan,
                         Image = category.Image,
-                        Advantage = category.Advantage != null ? JArray.Parse(category.Advantage) : null,
+                        Advantages = JsonConvert.DeserializeObject<List<Advantage>>(category.Advantage),
                         Enable = category.Enable,
                         ClassificationId = category.ClassificationId
                     });
@@ -180,22 +190,28 @@ namespace HousewareWebAPI.Services
             {
                 if (GetById(model.CategoryId) == null)
                 {
-                    var category = new Category()
+                    if (_classificationService.GetById(model.ClassificationId) != null)
                     {
-                        CategoryId = model.CategoryId,
-                        Name = model.Name,
-                        Slogan = model.Slogan,
-                        Image = _imageService.UploadImage(model.Image),
-                        //Vdieo = null;
-                        Advantage = model.Advantage?.ToString(),
-                        Enable = model.Enable,
-                        ClassificationId = model.ClassificationId
+                        var category = new Category()
+                        {
+                            CategoryId = model.CategoryId,
+                            Name = model.Name,
+                            Slogan = model.Slogan,
+                            Image = _imageService.UploadImage(model.Image),
+                            //Vdieo = null;
+                            Advantage = JArray.FromObject(model.Advantages).ToString(),
+                            Enable = model.Enable == true,
+                            ClassificationId = model.ClassificationId
                     };
-
-                    _context.Categories.Add(category);
-                    _context.SaveChanges();
-
-                    response.SetCode(CodeTypes.Success);
+                        _context.Categories.Add(category);
+                        _context.SaveChanges();
+                        response.SetCode(CodeTypes.Success);
+                    }
+                    else
+                    {
+                        response.SetCode(CodeTypes.Err_NotExist);
+                        response.SetResult("This ClassificationId doesn't exist");
+                    }
                 }
                 else
                 {
@@ -217,8 +233,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                model.CategoryId = model.CategoryId.ToUpper();
-                if (id.ToUpper() != model.CategoryId)
+                if (string.Compare(id, model.CategoryId, true) != 0)
                 {
                     response.SetCode(CodeTypes.Err_IdNotMatch);
                     response.SetResult("CategoryId in URL doesn't match CategoryId in model");
@@ -228,19 +243,26 @@ namespace HousewareWebAPI.Services
                 var category = GetById(model.CategoryId);
                 if (category != null)
                 {
-                    category.Name = model.Name;
-                    category.Slogan = model.Slogan;
-                    if (!model.Image.IsUrl || category.Image != model.Image.Content)
+                    if (_classificationService.GetById(model.ClassificationId) != null)
                     {
-                        category.Image = _imageService.UploadImage(model.Image);
+                        category.Name = model.Name;
+                        category.Slogan = model.Slogan;
+                        if (!model.Image.IsUrl || category.Image != model.Image.Content)
+                        {
+                            category.Image = _imageService.UploadImage(model.Image);
+                        }
+                        category.Advantage = JArray.FromObject(model.Advantages).ToString();
+                        category.Enable = model.Enable == true;
+                        category.ClassificationId = model.ClassificationId;
+                        _context.Entry(category).State = EntityState.Modified;
+                        _context.SaveChanges();
+                        response.SetCode(CodeTypes.Success);
                     }
-                    category.Advantage = model.Advantage?.ToString();
-                    category.Enable = model.Enable;
-                    category.ClassificationId = model.ClassificationId;
-
-                    _context.Entry(category).State = EntityState.Modified;
-                    _context.SaveChanges();
-                    response.SetCode(CodeTypes.Success);
+                    else
+                    {
+                        response.SetCode(CodeTypes.Err_NotExist);
+                        response.SetResult("This ClassificationId doesn't exist");
+                    }
                 }
                 else
                 {
@@ -280,6 +302,21 @@ namespace HousewareWebAPI.Services
                 response.SetResult(e.Message);
                 return response;
             }
+        }
+
+        public Response ModifySort(ModifySortCatAdminRequest model)
+        {
+            var response = new Response();
+            var categories = _context.Categories.Where(c => c.ClassificationId == model.ClassificationId.ToUpper()).ToList();
+            foreach (var category in categories)
+            {
+                var id = model.CategoryIds.Where(i => i.ToUpper() == category.CategoryId).FirstOrDefault();
+                category.Sort = id != null ? model.CategoryIds.IndexOf(id) : int.MaxValue;
+                _context.Entry(category).State = EntityState.Modified;
+            }
+            _context.SaveChanges();
+            response.SetCode(CodeTypes.Success);
+            return response;
         }
     }
 }
