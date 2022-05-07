@@ -2,7 +2,7 @@
 
 namespace HousewareWebAPI.Models
 {
-    public class AddImageRequest
+    public class ImageInput
     {
         [MyRequired]
         public string Content { get; set; }

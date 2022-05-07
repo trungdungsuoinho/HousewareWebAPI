@@ -4,6 +4,7 @@ using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Models;
 using Microsoft.Extensions.Options;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Net;
 
@@ -11,7 +12,8 @@ namespace HousewareWebAPI.Helpers.Services
 {
     public interface IImageService
     {
-        public string UploadImage(AddImageRequest model);
+        public string UploadImage(ImageInput model);
+        public List<string> UploadImages(List<ImageInput> model);
     }
 
     public class ImageService : IImageService
@@ -71,7 +73,7 @@ namespace HousewareWebAPI.Helpers.Services
             }
         }
 
-        public string UploadImage(AddImageRequest model)
+        public string UploadImage(ImageInput model)
         {
             if (!string.IsNullOrEmpty(model.Content))
             {
@@ -105,6 +107,19 @@ namespace HousewareWebAPI.Helpers.Services
                 }
             }
             throw new Exception("Image is null!");
+        }
+
+        public List<string> UploadImages(List<ImageInput> model)
+        {
+            var result = new List<string>();
+            if (model != null && model.Count > 0)
+            {
+                foreach (var image in model)
+                {
+                    result.Add(UploadImage(image));
+                }
+            }
+            return result;
         }
     }
 }

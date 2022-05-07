@@ -18,7 +18,7 @@ namespace HousewareWebAPI.Test
         [AllowAnonymous]
         [HttpPost("postimageurl")]
 
-        public IActionResult PostImage(AddImageRequest model)
+        public IActionResult PostImage(ImageInput model)
         {
             var response = TestService.AddImageUrl(_imageService, model);
             return Ok(response);

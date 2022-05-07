@@ -1,8 +1,8 @@
 -- Trigger upper Primary Key
 GO
-DROP TRIGGER upper_ClassificationId;
+DROP TRIGGER UpperKeysClassInsert;
 GO
-CREATE TRIGGER upper_ClassificationId
+CREATE TRIGGER UpperKeysClassInsert
 ON Classifications
 AFTER INSERT AS
 BEGIN
@@ -13,28 +13,55 @@ END
 GO
 
 GO
-DROP TRIGGER upper_CategoryId;
+DROP TRIGGER UpperKeysCatInsert;
 GO
-CREATE TRIGGER upper_CategoryId
+CREATE TRIGGER UpperKeysCatInsert
 ON Categories
 AFTER INSERT AS
 BEGIN
-	DECLARE @categoryId NVARCHAR(450);
-	SELECT @categoryId = i.CategoryId FROM inserted i;
+	DECLARE @categoryId NVARCHAR(450), @classificationId NVARCHAR(450);
+	SELECT @categoryId = i.CategoryId, @classificationId = i.ClassificationId FROM inserted i;
 	UPDATE Categories SET CategoryId = UPPER(@categoryId) WHERE CategoryId = @categoryId;
 END
 GO
 
 GO
-DROP TRIGGER upper_ProductId;
+DROP TRIGGER UpperClassIdCatUpdate;
 GO
-CREATE TRIGGER upper_ProductId
+CREATE TRIGGER UpperClassIdCatUpdate
+ON Categories
+AFTER UPDATE AS
+BEGIN
+	DECLARE @categoryId NVARCHAR(450), @classificationId NVARCHAR(450);
+	SELECT @categoryId = i.CategoryId, @classificationId = i.ClassificationId FROM inserted i;
+	UPDATE Categories SET ClassificationId = UPPER(@classificationId) WHERE CategoryId = @categoryId AND ClassificationId != UPPER(@classificationId) COLLATE SQL_Latin1_General_CP1_CS_AS;
+END
+GO
+
+GO
+DROP TRIGGER UpperKeysProInsert;
+GO
+CREATE TRIGGER UpperKeysProInsert
 ON Products
 AFTER INSERT AS
 BEGIN
-	DECLARE @productId NVARCHAR(450);
-	SELECT @productId = i.ProductId FROM inserted i;
+	DECLARE @productId NVARCHAR(450), @categoryId NVARCHAR(450);
+	SELECT @productId = i.ProductId, @categoryId = i.CategoryId FROM inserted i;
 	UPDATE Products SET ProductId = UPPER(@productId) WHERE ProductId = @productId;
+END
+GO
+
+GO
+DROP TRIGGER UpperCatIdProUpdate;
+GO
+CREATE TRIGGER UpperCatIdProUpdate
+ON Products
+AFTER UPDATE AS
+BEGIN
+	DECLARE @productId NVARCHAR(450), @categoryId NVARCHAR(450);
+	SELECT @productId = i.ProductId, @categoryId = i.CategoryId FROM inserted i;
+	UPDATE Products SET CategoryId = UPPER(@categoryId) WHERE ProductId = @productId AND CategoryId != UPPER(@categoryId) COLLATE SQL_Latin1_General_CP1_CS_AS;
+	UPDATE Products SET ModifyDate = GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'	WHERE ProductId = @productId;
 END
 GO
 
@@ -85,24 +112,3 @@ BEGIN
 	END
 END
 GO
-
-
-
--- Trigger set value for ModifyDate of Product
-GO
-DROP TRIGGER set_ModifyDate_Product;
-GO
-CREATE TRIGGER set_ModifyDate_Product
-ON Products
-AFTER UPDATE AS
-BEGIN
-	UPDATE Products SET ModifyDate = (GETDATE() AT TIME ZONE 'N. Central Asia Standard Time')
-	WHERE ProductId = (SELECT i.ProductId FROM inserted i);
-END
-GO
-
-
-
-SELECT	*
-FROM	sys.messages
-WHERE	message_id BETWEEN 13000 AND 49999;

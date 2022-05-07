@@ -18,7 +18,7 @@ namespace HousewareWebAPI.Test
             return reponse;
         }
 
-        public static Response AddImageUrl(IImageService imageService, AddImageRequest model)
+        public static Response AddImageUrl(IImageService imageService, ImageInput model)
         {
             var reponse = new Response();
             var image = imageService.UploadImage(model);

@@ -12,6 +12,7 @@ namespace HousewareWebAPI.Services
 {
     public interface IClassificationService
     {
+        public Classification GetById(string id);
         public Response GetClassification(string id);
         public Response GetAllClassification();
         public Response GetClassAdmin(string id, bool? enable = null);
@@ -19,17 +20,12 @@ namespace HousewareWebAPI.Services
         public Response AddClassAdmin(AddClassAdminRequest model);
         public Response UpdateClassAdmin(string id, AddClassAdminRequest model);
         public Response DeleteClassAdmin(string id);
-        public Response ModifySort(List<string> ids);
+        public Response ModifySort(ModifySortClassAdminRequest ids);
     }
     public class ClassificationService : IClassificationService
     {
         private readonly HousewareContext _context;
         private readonly IImageService _imageService;
-
-        private Classification GetById(string id)
-        {
-            return _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper());
-        }
 
         public ClassificationService(HousewareContext context, IImageService imageService)
         {
@@ -37,13 +33,17 @@ namespace HousewareWebAPI.Services
             _imageService = imageService;
         }
 
+        public Classification GetById(string id)
+        {
+            return _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper());
+        }
+
         public Response GetClassification(string id)
         {
             var response = new Response();
             try
             {
-                id = id.ToUpper();
-                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && c.Enable == true);
+                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper() && c.Enable == true);
                 if (classification == null)
                 {
                     response.SetCode(CodeTypes.Err_NotFound);
@@ -51,7 +51,7 @@ namespace HousewareWebAPI.Services
                 }
                 else
                 {
-                    _context.Entry(classification).Collection(c => c.Categories).Load();
+                    _context.Entry(classification).Collection(c => c.Categories).Query().OrderBy(c => c.Sort).Load();
                     var result = new GetClassificationResponse()
                     {
                         ClassificationId = classification.ClassificationId,
@@ -112,8 +112,7 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                id = id.ToUpper();
-                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id && (enable == null || c.Enable == enable));
+                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper() && (enable == null || c.Enable == enable));
                 if (classification == null)
                 {
                     response.SetCode(CodeTypes.Err_NotFound);
@@ -292,15 +291,14 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response ModifySort(List<string> ids)
+        public Response ModifySort(ModifySortClassAdminRequest model)
         {
             var response = new Response();
-
             var classifications = _context.Classifications.ToList();            
             foreach(var classification in classifications)
             {
-                var id = ids.Where(i => i == classification.ClassificationId).FirstOrDefault();
-                classification.Sort = id != null ? ids.IndexOf(id) : int.MaxValue;
+                var id = model.ClassificationIds.Where(i => i.ToUpper() == classification.ClassificationId).FirstOrDefault();
+                classification.Sort = id != null ? model.ClassificationIds.IndexOf(id) : int.MaxValue;
                 _context.Entry(classification).State = EntityState.Modified;
             }
             _context.SaveChanges();

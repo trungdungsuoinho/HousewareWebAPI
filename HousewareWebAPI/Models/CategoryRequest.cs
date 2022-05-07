@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using Newtonsoft.Json.Linq;
+using System.Collections.Generic;
 
 namespace HousewareWebAPI.Models
 {
@@ -11,10 +12,25 @@ namespace HousewareWebAPI.Models
         public string Name { get; set; }
         public string Slogan { get; set; }
         [MyRequired]
-        public AddImageRequest Image { get; set; }
+        public ImageInput Image { get; set; }
         //public AddVideoRequest Video { get; set; }
-        public JArray Advantage { get; set; }
-        public bool Enable { get; set; }
+        public List<Advantage> Advantages { get; set; }
+        public bool? Enable { get; set; }
+        [MyRequired]
         public string ClassificationId { get; set; }
+    }
+
+    public class Advantage
+    {
+        public string Head { get; set; }
+        public string Content { get; set; }
+    }
+
+    public class ModifySortCatAdminRequest
+    {
+        [MyRequired]
+        public string ClassificationId { get; set; }
+        [MyRequired]
+        public List<string> CategoryIds { get; set; }
     }
 }

@@ -14,13 +14,13 @@ namespace HousewareWebAPI.Data.Entities
         [MyRequired]
         public string Avatar { get; set; }
         /// <summary>
-        /// Type: JArray String. Property of a item: image
+        /// Type: Json String. Property of a item: image
         /// </summary>
         public string Images { get; set; }
         public int Price { get; set; }
         public int View { get; set; }
         /// <summary>
-        /// Type: JArray String. Property of a item: highlight
+        /// Type: Json String. Property of a item: highlight
         /// </summary>
         public string Highlights { get; set; }
         /// <summary>
@@ -42,7 +42,7 @@ namespace HousewareWebAPI.Data.Entities
         // Navigation
         public string CategoryId { get; set; }
         [JsonIgnore]
-        public virtual Category Category { get; set; }
-        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
+        public Category Category { get; set; }
+        public ICollection<ProductSpecification> ProductSpecifications { get; set; }
     }
 }

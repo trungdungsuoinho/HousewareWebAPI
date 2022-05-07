@@ -15,7 +15,7 @@ namespace HousewareWebAPI.Data.Entities
         public string Image { get; set; }
         public string Video { get; set; }
         /// <summary>
-        /// Type: JArray String. Property of a item: head, content
+        /// Type: Json String. Property of a item: head, content
         /// </summary>
         public string Advantage { get; set; }
         public bool Enable { get; set; }
@@ -23,7 +23,7 @@ namespace HousewareWebAPI.Data.Entities
         // Navigation
         public string ClassificationId { get; set; }
         [JsonIgnore]
-        public virtual Classification Classification { get; set; }
-        public virtual ICollection<Product> Products { get; set; }
+        public Classification Classification { get; set; }
+        public ICollection<Product> Products { get; set; }
     }
 }
