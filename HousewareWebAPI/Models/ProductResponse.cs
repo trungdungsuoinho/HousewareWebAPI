@@ -21,6 +21,7 @@ namespace HousewareWebAPI.Models
         public int Price { get; set; }
         public int View { get; set; }
         public List<string> Highlights { get; set; }
+        public List<GetSpecByPro> Specifications { get; set; }
     }
 
     public class GetProAdminResponse

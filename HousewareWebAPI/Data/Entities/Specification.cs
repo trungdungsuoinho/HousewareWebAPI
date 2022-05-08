@@ -14,6 +14,6 @@ namespace HousewareWebAPI.Data.Entities
 
         // Navigation
         [JsonIgnore]
-        public virtual ICollection<ProductSpecification> ProductSpecifications { get; set; }
+        public ICollection<ProductSpecification> ProductSpecifications { get; set; }
     }
 }
