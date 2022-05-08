@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+﻿using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -12,7 +10,7 @@ namespace HousewareWebAPI.Data.Entities
 
         // Navigation
         [JsonIgnore]
-        public virtual Product Product { get; set; }
-        public virtual Specification Specification { get; set; }
+        public Product Product { get; set; }
+        public Specification Specification { get; set; }
     }
 }

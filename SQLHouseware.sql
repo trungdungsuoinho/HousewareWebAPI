@@ -66,9 +66,9 @@ END
 GO
 
 GO
-DROP TRIGGER upper_SpecificationId;
+DROP TRIGGER UpperKeysSpecInsert;
 GO
-CREATE TRIGGER upper_SpecificationId
+CREATE TRIGGER UpperKeysSpecInsert
 ON Specifications
 AFTER INSERT AS
 BEGIN

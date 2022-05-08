@@ -54,7 +54,8 @@ namespace HousewareWebAPI.Services
                 }
                 else
                 {
-                    //_context.Entry(product).Collection(c => c.ProductSpecifications).Load();
+                    //_context.Entry(product).Collection(p => p.ProductSpecifications).Load();
+                    //_context.Entry(product).Collection(p => p.ProductSpecifications).Load();
                     var result = new GetProductResponse()
                     {
                         ProductId = product.ProductId,
@@ -63,8 +64,9 @@ namespace HousewareWebAPI.Services
                         Price = product.Price,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
-                        //ProductSpecifications = product.ProductSpecifications.OrderBy(c => c.Sort).Select(c => new ProInGetCat
+                        //Specifications = product.ProductSpecifications.OrderBy(s => s.Specification.Sort).Select(c => new GetSpecByPro
                         //{
+                             
                         //    ProductId = c.ProductId,
                         //    Name = c.Name,
                         //    Avatar = c.Avatar,
