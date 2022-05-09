@@ -12,6 +12,7 @@ namespace HousewareWebAPI.Services
     public interface ISpecificationService
     {
         public Specification GetById(string id);
+        public List<GetSpecByPro> GetSpecByProduct(Product product);
         public Response GetSpecAdmin(string id);
         public Response GetAllSpecAdmin();
         public Response AddSpecAdmin(AddSpecAdminRequest model);
@@ -31,6 +32,30 @@ namespace HousewareWebAPI.Services
         public Specification GetById(string id)
         {
             return _context.Specifications.FirstOrDefault(s => s.SpecificationId == id.ToUpper());
+        }
+
+        public List<GetSpecByPro> GetSpecByProduct(Product product)
+        {
+            var result = new List<GetSpecByPro>();
+            _context.Entry(product).Collection(p => p.ProductSpecifications).Load();
+            if (product.ProductSpecifications != null && product.ProductSpecifications.Count > 0)
+            {
+                foreach (var productSpecification in product.ProductSpecifications)
+                {
+                    _context.Entry(productSpecification).Reference(p => p.Specification).Load();
+                }
+                foreach (var productSpecification in product.ProductSpecifications.OrderBy(p => p.Specification.Sort))
+                {
+                    result.Add(new GetSpecByPro
+                    {
+                        SpecificationId = productSpecification.SpecificationId,
+                        Name = productSpecification.Specification.Name,
+                        Description = productSpecification.Specification.Description,
+                        Value = productSpecification.Value
+                    });
+                };
+            }
+            return result;
         }
 
         public Response GetSpecAdmin(string id)
