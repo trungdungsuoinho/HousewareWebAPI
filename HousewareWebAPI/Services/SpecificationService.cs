@@ -12,7 +12,7 @@ namespace HousewareWebAPI.Services
     public interface ISpecificationService
     {
         public Specification GetById(string id);
-        public List<GetSpecByPro> GetSpecByProduct(Product product);
+        public List<GetSpecByPro> GetSpecByProduct(string productId);
         public Response GetSpecAdmin(string id);
         public Response GetAllSpecAdmin();
         public Response AddSpecAdmin(AddSpecAdminRequest model);
@@ -34,17 +34,17 @@ namespace HousewareWebAPI.Services
             return _context.Specifications.FirstOrDefault(s => s.SpecificationId == id.ToUpper());
         }
 
-        public List<GetSpecByPro> GetSpecByProduct(Product product)
+        public List<GetSpecByPro> GetSpecByProduct(string productId)
         {
             var result = new List<GetSpecByPro>();
-            _context.Entry(product).Collection(p => p.ProductSpecifications).Load();
-            if (product.ProductSpecifications != null && product.ProductSpecifications.Count > 0)
+            var productSpecifications = _context.ProductSpecifications.Where(p => p.ProductId == productId).ToList();
+            if (productSpecifications != null && productSpecifications.Count > 0)
             {
-                foreach (var productSpecification in product.ProductSpecifications)
+                foreach (var productSpecification in productSpecifications)
                 {
                     _context.Entry(productSpecification).Reference(p => p.Specification).Load();
                 }
-                foreach (var productSpecification in product.ProductSpecifications.OrderBy(p => p.Specification.Sort))
+                foreach (var productSpecification in productSpecifications.OrderBy(p => p.Specification.Sort))
                 {
                     result.Add(new GetSpecByPro
                     {

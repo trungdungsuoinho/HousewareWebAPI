@@ -37,6 +37,7 @@ namespace HousewareWebAPI.Models
         //public string Overview { get; set; }
         //public string Design { get; set; }
         //public string Performance { get; set; }
+        public List<GetSpecByPro> Specifications { get; set; }
         public DateTime CreateDate { get; set; }
         public DateTime ModifyDate { get; set; }
         public bool Enable { get; set; }
