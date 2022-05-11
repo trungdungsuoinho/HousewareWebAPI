@@ -64,7 +64,7 @@ namespace HousewareWebAPI.Services
                         Price = product.Price,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
-                        Specifications = _specificationService.GetSpecByProduct(product)
+                        Specifications = _specificationService.GetSpecByProduct(product.ProductId)
                     };
                     response.SetCode(CodeTypes.Success);
                     response.SetResult(result);
@@ -102,6 +102,7 @@ namespace HousewareWebAPI.Services
                         Price = product.Price,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
+                        Specifications = _specificationService.GetSpecByProduct(product.ProductId),
                         CreateDate = product.CreateDate,
                         ModifyDate = product.ModifyDate,
                         Enable = product.Enable
@@ -138,6 +139,7 @@ namespace HousewareWebAPI.Services
                         Price = product.Price,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
+                        Specifications = _specificationService.GetSpecByProduct(product.ProductId),
                         CreateDate = product.CreateDate,
                         ModifyDate = product.ModifyDate,
                         Enable = product.Enable
@@ -174,6 +176,7 @@ namespace HousewareWebAPI.Services
                         Price = product.Price,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
+                        Specifications = _specificationService.GetSpecByProduct(product.ProductId),
                         CreateDate = product.CreateDate,
                         ModifyDate = product.ModifyDate,
                         Enable = product.Enable
@@ -211,6 +214,11 @@ namespace HousewareWebAPI.Services
                             Highlights = JsonConvert.SerializeObject(model.Highlights),
                             Enable = model.Enable == true,
                         };
+                        //foreach (var specification in model.Specifications)
+                        //{
+                        //    _context.Specifications.Add(specification);
+                        //}
+                        //model.Specifications.Select(s => s));
                         _context.Products.Add(product);
                         _context.SaveChanges();
                         response.SetCode(CodeTypes.Success);
