@@ -93,6 +93,34 @@ GO
 
 
 
+--GO
+--DROP TRIGGER CheckKeyRefProdSpecInsert;
+--GO
+--CREATE TRIGGER CheckKeyRefProdSpecInsert
+--ON ProductSpecifications
+--FOR INSERT AS
+--BEGIN
+--	DECLARE @productId NVARCHAR(450) = NULL, @specificationId NVARCHAR(450) = NULL, @value NVARCHAR(MAX);
+--	SELECT @productId = i.ProductId, @specificationId = i.SpecificationId, @value = i.[Value] FROM Products p, Specifications s, inserted i WHERE p.ProductId = i.ProductId AND s.SpecificationId = i.SpecificationId;
+--	PRINT('----------------------')
+--	PRINT(@productId)
+--	PRINT(@specificationId)
+--	PRINT('----------------------')
+--	IF @productId IS NULL OR @specificationId IS NULL
+--		RAISERROR(N'Product %s or specification %s does not exist! ', 16, 0, @productId, @specificationId)
+--END
+--GO
+
+
+
+
+--INSERT INTO ProductSpecifications VALUES('SHG2703SA', 'CHATLIEU', '');
+
+--SELECT * FROM Products;
+--SELECT * FROM ProductSpecifications;
+--SELECT * FROM Specifications;
+--DELETE Products WHERE 1=1
+
 --- Trigger set false for property enable cascase
 GO
 DROP TRIGGER enable_Classification;
