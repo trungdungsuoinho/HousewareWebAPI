@@ -214,14 +214,16 @@ namespace HousewareWebAPI.Services
                             Highlights = JsonConvert.SerializeObject(model.Highlights),
                             Enable = model.Enable == true,
                         };
+                        _context.Products.Add(product);
+                        _context.SaveChanges();
                         if (_specificationService.AddValueSpecification(model.ProductId, model.Specifications))
                         {
-                            _context.Products.Add(product);
-                            _context.SaveChanges();
                             response.SetCode(CodeTypes.Success);
                         }
                         else
                         {
+                            _context.Products.Remove(product);
+                            _context.SaveChanges();
                             response.SetCode(CodeTypes.Err_AccFail);
                             response.SetResult("Can't add one of these Specifications");
                         }
