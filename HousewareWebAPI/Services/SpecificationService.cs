@@ -47,7 +47,8 @@ namespace HousewareWebAPI.Services
                 {
                     _context.Entry(productSpecification).Reference(p => p.Specification).Load();
                 }
-                foreach (var productSpecification in productSpecifications.OrderBy(p => p.Specification.Sort))
+                productSpecifications = productSpecifications.OrderBy(p => p.Specification.Sort).ToList();
+                foreach (var productSpecification in productSpecifications)
                 {
                     result.Add(new GetSpecByPro
                     {
