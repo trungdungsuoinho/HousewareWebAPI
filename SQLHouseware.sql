@@ -78,6 +78,19 @@ BEGIN
 END
 GO
 
+GO
+DROP TRIGGER UpperKeysProSpecInsert;
+GO
+CREATE TRIGGER UpperKeysProSpecInsert
+ON ProductSpecifications
+AFTER INSERT AS
+BEGIN
+	DECLARE @productId NVARCHAR(450), @specificationId NVARCHAR(450);
+	SELECT @productId = i.ProductId, @specificationId = i.SpecificationId FROM inserted i;
+	UPDATE ProductSpecifications SET ProductId = UPPER(@productId), SpecificationId = UPPER(@specificationId) WHERE ProductId = @productId AND SpecificationId = @specificationId;
+END
+GO
+
 
 
 --- Trigger set false for property enable cascase

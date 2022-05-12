@@ -214,14 +214,17 @@ namespace HousewareWebAPI.Services
                             Highlights = JsonConvert.SerializeObject(model.Highlights),
                             Enable = model.Enable == true,
                         };
-                        //foreach (var specification in model.Specifications)
-                        //{
-                        //    _context.Specifications.Add(specification);
-                        //}
-                        //model.Specifications.Select(s => s));
-                        _context.Products.Add(product);
-                        _context.SaveChanges();
-                        response.SetCode(CodeTypes.Success);
+                        if (_specificationService.AddValueSpecification(model.ProductId, model.Specifications))
+                        {
+                            _context.Products.Add(product);
+                            _context.SaveChanges();
+                            response.SetCode(CodeTypes.Success);
+                        }
+                        else
+                        {
+                            response.SetCode(CodeTypes.Err_AccFail);
+                            response.SetResult("Can't add one of these Specifications");
+                        }
                     }
                     else
                     {
@@ -271,10 +274,18 @@ namespace HousewareWebAPI.Services
                         product.Price = model.Price;
                         product.Highlights = JsonConvert.SerializeObject(model.Highlights);
                         product.Enable = model.Enable == true;
-                        
-                        _context.Entry(product).State = EntityState.Modified;
-                        _context.SaveChanges();
-                        response.SetCode(CodeTypes.Success);
+
+                        if (_specificationService.UpdateValueSpecification(model.ProductId, model.Specifications))
+                        {
+                            _context.Entry(product).State = EntityState.Modified;
+                            _context.SaveChanges();
+                            response.SetCode(CodeTypes.Success);
+                        }
+                        else
+                        {
+                            response.SetCode(CodeTypes.Err_AccFail);
+                            response.SetResult("Can't update one of these Specifications");
+                        }
                     }
                     else
                     {

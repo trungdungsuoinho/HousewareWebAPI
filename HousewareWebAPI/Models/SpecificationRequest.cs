@@ -17,4 +17,11 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public List<string> SpecificationIds { get; set; }
     }
+
+    public class AddValueSpec
+    {
+        [MyRequired]
+        public string SpecificationId { get; set; }
+        public string Value { get; set; }
+    }
 }

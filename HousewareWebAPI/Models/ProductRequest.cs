@@ -16,7 +16,7 @@ namespace HousewareWebAPI.Models
         public List<ImageInput> Images { get; set; }
         public int Price { get; set; }
         public List<string> Highlights { get; set; }
-        public List<GetSpecByPro> Specifications { get; set; }
+        public List<AddValueSpec> Specifications { get; set; }
         public bool? Enable { get; set; }
     }
 
