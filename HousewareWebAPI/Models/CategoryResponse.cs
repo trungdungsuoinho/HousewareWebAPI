@@ -28,12 +28,12 @@ namespace HousewareWebAPI.Models
     public class GetCatAdminResponse
     {
         public string CategoryId { get; set; }
+        public string ClassificationId { get; set; }
         public string Name { get; set; }
         public string Slogan { get; set; }
         public string Image { get; set; }
         //public string Video { get; set; }
         public List<Advantage> Advantages { get; set; }
         public bool Enable { get; set; }
-        public string ClassificationId { get; set; }
     }
 }

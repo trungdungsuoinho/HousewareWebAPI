@@ -14,7 +14,6 @@ namespace HousewareWebAPI.Services
         public Specification GetById(string id);
         public List<GetSpecByPro> GetSpecByProduct(string id);
         public bool AddValueSpecification(string productId, List<AddValueSpec> model);
-        public bool DeleteValueSpecification(string productId);
         public bool UpdateValueSpecification(string productId, List<AddValueSpec> model);
         public Response GetSpecAdmin(string id);
         public Response GetAllSpecAdmin();
@@ -39,27 +38,16 @@ namespace HousewareWebAPI.Services
 
         public List<GetSpecByPro> GetSpecByProduct(string id)
         {
-            var result = new List<GetSpecByPro>();
-            var productSpecifications = _context.ProductSpecifications.Where(p => p.ProductId == id).ToList();
-            if (productSpecifications != null && productSpecifications.Count > 0)
+            return _context.ProductSpecifications
+            .Where(p => p.ProductId == id)
+            .Include(p => p.Specification)
+            .Select(p => new GetSpecByPro
             {
-                foreach (var productSpecification in productSpecifications)
-                {
-                    _context.Entry(productSpecification).Reference(p => p.Specification).Load();
-                }
-                productSpecifications = productSpecifications.OrderBy(p => p.Specification.Sort).ToList();
-                foreach (var productSpecification in productSpecifications)
-                {
-                    result.Add(new GetSpecByPro
-                    {
-                        SpecificationId = productSpecification.SpecificationId,
-                        Name = productSpecification.Specification.Name,
-                        Description = productSpecification.Specification.Description,
-                        Value = productSpecification.Value
-                    });
-                };
-            }
-            return result;
+                SpecificationId = p.SpecificationId,
+                Name = p.Specification.Name,
+                Description = p.Specification.Description,
+                Value = p.Value,
+            }).ToList();
         }
 
         public bool AddValueSpecification(string productId, List<AddValueSpec> model)
@@ -86,7 +74,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public bool DeleteValueSpecification(string productId)
+        public bool UpdateValueSpecification(string productId, List<AddValueSpec> model)
         {
             using var transaction = _context.Database.BeginTransaction();
             var specifications = _context.ProductSpecifications.Where(p => p.ProductId == productId);
@@ -94,24 +82,24 @@ namespace HousewareWebAPI.Services
             {
                 _context.ProductSpecifications.Remove(specification);
             }
-            if (_context.SaveChanges() == specifications.Count())
+            if (_context.SaveChanges() >= specifications.Count())
             {
-                transaction.Commit();
-                return true;
+                foreach (var spec in model)
+                {
+                    _context.ProductSpecifications.Add(new ProductSpecification
+                    {
+                        ProductId = productId,
+                        SpecificationId = spec.SpecificationId,
+                        Value = spec.Value
+                    });
+                }
+                if (_context.SaveChanges() == model.Count)
+                {
+                    transaction.Commit();
+                    return true;
+                }
             }
-            else
-            {
-                transaction.Rollback();
-                return false;
-            }
-        }
-
-        public bool UpdateValueSpecification(string productId, List<AddValueSpec> model)
-        {
-            if (DeleteValueSpecification(productId))
-            {
-                return AddValueSpecification(productId, model);
-            }
+            transaction.Rollback();
             return false;
         }
 
