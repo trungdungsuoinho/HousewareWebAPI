@@ -85,47 +85,18 @@ CREATE TRIGGER UpperKeysProSpecInsert
 ON ProductSpecifications
 AFTER INSERT AS
 BEGIN
-	DECLARE @productId NVARCHAR(450), @specificationId NVARCHAR(450);
-	SELECT @productId = i.ProductId, @specificationId = i.SpecificationId FROM inserted i;
-	UPDATE ProductSpecifications SET ProductId = UPPER(@productId), SpecificationId = UPPER(@specificationId) WHERE ProductId = @productId AND SpecificationId = @specificationId;
+	UPDATE ProductSpecifications
+	SET ProductId = UPPER(i.ProductId), SpecificationId = UPPER(i.SpecificationId)
+	FROM inserted i
+	WHERE ProductSpecifications.ProductId = i.ProductId AND ProductSpecifications.SpecificationId = i.SpecificationId
 END
 GO
 
-
-
---GO
---DROP TRIGGER CheckKeyRefProdSpecInsert;
---GO
---CREATE TRIGGER CheckKeyRefProdSpecInsert
---ON ProductSpecifications
---FOR INSERT AS
---BEGIN
---	DECLARE @productId NVARCHAR(450) = NULL, @specificationId NVARCHAR(450) = NULL, @value NVARCHAR(MAX);
---	SELECT @productId = i.ProductId, @specificationId = i.SpecificationId, @value = i.[Value] FROM Products p, Specifications s, inserted i WHERE p.ProductId = i.ProductId AND s.SpecificationId = i.SpecificationId;
---	PRINT('----------------------')
---	PRINT(@productId)
---	PRINT(@specificationId)
---	PRINT('----------------------')
---	IF @productId IS NULL OR @specificationId IS NULL
---		RAISERROR(N'Product %s or specification %s does not exist! ', 16, 0, @productId, @specificationId)
---END
---GO
-
-
-
-
---INSERT INTO ProductSpecifications VALUES('SHG2703SA', 'CHATLIEU', '');
-
---SELECT * FROM Products;
---SELECT * FROM ProductSpecifications;
---SELECT * FROM Specifications;
---DELETE Products WHERE 1=1
-
 --- Trigger set false for property enable cascase
 GO
-DROP TRIGGER enable_Classification;
+DROP TRIGGER EnableClassificationCascase;
 GO
-CREATE TRIGGER enable_Classification
+CREATE TRIGGER EnableClassificationCascase
 ON Classifications
 AFTER UPDATE AS
 BEGIN
@@ -139,9 +110,9 @@ END
 GO
 
 GO
-DROP TRIGGER enable_Category;
+DROP TRIGGER EnableCategoryCascase;
 GO
-CREATE TRIGGER enable_Category
+CREATE TRIGGER EnableCategoryCascase
 ON Categories
 AFTER UPDATE AS
 BEGIN

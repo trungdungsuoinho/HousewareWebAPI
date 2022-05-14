@@ -216,16 +216,23 @@ namespace HousewareWebAPI.Services
                         };
                         _context.Products.Add(product);
                         _context.SaveChanges();
-                        if (_specificationService.AddValueSpecification(model.ProductId, model.Specifications))
+                        try
                         {
-                            response.SetCode(CodeTypes.Success);
+                            if (_specificationService.AddValueSpecification(model.ProductId, model.Specifications))
+                            {
+                                response.SetCode(CodeTypes.Success);
+                            }
+                            else
+                            {
+                                throw new Exception();
+                            }
                         }
-                        else
+                        catch (Exception e)
                         {
                             _context.Products.Remove(product);
                             _context.SaveChanges();
                             response.SetCode(CodeTypes.Err_AccFail);
-                            response.SetResult("Can't add one of these Specifications");
+                            response.SetResult("Can't add one of these Specifications. " + e.Message);
                         }
                     }
                     else

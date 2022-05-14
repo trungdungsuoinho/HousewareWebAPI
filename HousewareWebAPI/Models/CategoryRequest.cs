@@ -9,6 +9,8 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public string CategoryId { get; set; }
         [MyRequired]
+        public string ClassificationId { get; set; }
+        [MyRequired]
         public string Name { get; set; }
         public string Slogan { get; set; }
         [MyRequired]
@@ -16,8 +18,6 @@ namespace HousewareWebAPI.Models
         //public AddVideoRequest Video { get; set; }
         public List<Advantage> Advantages { get; set; }
         public bool? Enable { get; set; }
-        [MyRequired]
-        public string ClassificationId { get; set; }
     }
 
     public class Advantage
