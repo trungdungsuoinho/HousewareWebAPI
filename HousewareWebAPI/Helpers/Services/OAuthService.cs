@@ -4,19 +4,16 @@ using HousewareWebAPI.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Helpers.Services
 {
     public interface IOAuthService
     {
         public Response GenOAuthURI();
-        public Response GetOAuthInfo(string code);
+        public Response VerifyEmail(string code);
     }
 
     public class OAuthService : IOAuthService
@@ -44,7 +41,7 @@ namespace HousewareWebAPI.Helpers.Services
                     "?client_id={0}" +
                     "&redirect_uri={1}" +
                     "&response_type=code" +
-                    "&score={2}" +
+                    "&scope={2}" +
                     "&access_type=offline" +
                     "&include_granted_scopes=true",
                     _appSettings.OAuthClientId,
@@ -61,30 +58,64 @@ namespace HousewareWebAPI.Helpers.Services
             return response;
         }
 
-        public OAuthTokenRespone GetOAuthToken(string code)
+        public OAuthToken GetOAuthToken(string code)
         {
             var request = (HttpWebRequest)WebRequest.Create("https://accounts.google.com/o/oauth2/token");
-            string param = string.Format("grant_type=authorization_code&code={0}&client_id={1}&client_secret={2}&redirect_uri={3}", code, _appSettings.OAuthClientId, _appSettings.OAuthClientSeret, _appSettings.OAuthRedirectURI);
+            string param = string.Format(
+                "grant_type=authorization_code" +
+                "&code={0}" +
+                "&client_id={1}" +
+                "&client_secret={2}" +
+                "&redirect_uri={3}", 
+                code, 
+                _appSettings.OAuthClientId,
+                _appSettings.OAuthClientSeret,
+                _appSettings.OAuthRedirectURI);
             var data = Encoding.ASCII.GetBytes(param);
 
             request.Method = "POST";
             request.ContentType = "application/x-www-form-urlencoded";
             request.ContentLength = data.Length;
 
-            using (var stream = request.GetRequestStream())
+            try
             {
-                stream.Write(data, 0, data.Length);
+                using (var stream = request.GetRequestStream())
+                {
+                    stream.Write(data, 0, data.Length);
+                }
+                var response = (HttpWebResponse)request.GetResponse();
+                var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                var result = JsonConvert.DeserializeObject<OAuthToken>(responseString);
+                return result;
             }
-
-            var response = (HttpWebResponse)request.GetResponse();
-
-            var responseString = new StreamReader(response.GetResponseStream()).ReadToEnd();
-
-            OAuthTokenRespone result = JsonConvert.DeserializeObject<OAuthTokenRespone>(responseString);
-            return result;
+            catch (Exception e)
+            {
+                throw new Exception("Can't get OAuth token! " + e.Message);
+            }            
         }
 
-        public Response GetOAuthInfo(string code)
+        public OAuthUserInfo GetOAuthUserInfo(OAuthToken oAuthToken)
+        {
+            var request = (HttpWebRequest)WebRequest.Create("https://www.googleapis.com/oauth2/v1/userinfo");
+            request.Method = "GET";
+            request.Headers.Add(string.Format("Authorization: {0} {1}", oAuthToken.Token_type, oAuthToken.Access_token));
+            request.ContentType = "application/x-www-form-urlencoded";
+            request.Accept = "application/json";
+
+            try
+            {
+                using var response = (HttpWebResponse)request.GetResponse();
+                var userInfoString = new StreamReader(response.GetResponseStream()).ReadToEnd();
+                var userInfo = JsonConvert.DeserializeObject<OAuthUserInfo>(userInfoString);
+                return userInfo;
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Can't get Email from this OAuth token! " + e.Message);
+            }
+        }
+
+        public Response VerifyEmail(string code)
         {
             var response = new Response();
             if (code == "access_denied")
@@ -96,18 +127,9 @@ namespace HousewareWebAPI.Helpers.Services
 
             var oAuthToken = GetOAuthToken(code);
 
-            var request = (HttpWebRequest)WebRequest.Create("https://www.googleapis.com/auth/userinfo.profile");
-            request.Method = "GET";
-            request.Headers.Add(string.Format("Authorization: Bearer {0}", oAuthToken.Access_token));
-            request.ContentType = "application/x-www-form-urlencoded";
-            request.Accept = "application/json";
-
-            using (var responseAPI = (HttpWebResponse)request.GetResponse())
-            {
-                var responseString = new StreamReader(responseAPI.GetResponseStream()).ReadToEnd();
-                response.SetCode(CodeTypes.Success);
-                response.SetResult(responseString);
-            }
+            var responseString = GetOAuthUserInfo(oAuthToken);
+            response.SetCode(CodeTypes.Success);
+            response.SetResult(responseString);
             return response;
         }
     }
