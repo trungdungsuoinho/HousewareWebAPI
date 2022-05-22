@@ -14,8 +14,8 @@ namespace Houseware.WebAPI.Data
         public DbSet<Product> Products { get; set; }
         public DbSet<Specification> Specifications { get; set; }
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
-
-        //public DbSet<User> Users { get; set; }
+        public DbSet<Customer> Customers { get; set; }
+        public DbSet<Cart> Carts { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -42,10 +42,15 @@ namespace Houseware.WebAPI.Data
             // ProductSpecification
             modelBuilder.Entity<ProductSpecification>().HasKey(ps => new { ps.ProductId, ps.SpecificationId });
 
-            //// User
-            //modelBuilder.Entity<User>().HasIndex(u => u.UserName).IsUnique(true);
-            //modelBuilder.Entity<User>().Property(u => u.VerifyPhone).HasDefaultValue(false);
-            //modelBuilder.Entity<User>().Property(u => u.VerifyEmail).HasDefaultValue(false);
+            // Customer
+            modelBuilder.Entity<Customer>().HasIndex(u => u.Phone).IsUnique(true);
+            modelBuilder.Entity<Customer>().Property(u => u.VerifyPhone).HasDefaultValue("N");
+            modelBuilder.Entity<Customer>().HasIndex(u => u.Email).IsUnique(true);
+            modelBuilder.Entity<Customer>().Property(u => u.VerifyEmail).HasDefaultValue("N");
+            modelBuilder.Entity<Customer>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+
+            // Cart
+            modelBuilder.Entity<Cart>().HasKey(c => new { c.CustomerId, c.ProductId });
         }
     }
 }

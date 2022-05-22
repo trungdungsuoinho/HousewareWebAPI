@@ -14,5 +14,6 @@
         public readonly static CodeDescription Err_AccFail = new(7, "Execution actions failed!");
         public readonly static CodeDescription Err_LackVal = new(8, "Lack of value!");
         public readonly static CodeDescription Err_AccessDenied = new(9, "Access denied");
+        public readonly static CodeDescription Err_Unauthorized = new(10, "Unauthorized");
     }
 }

@@ -1,10 +1,14 @@
-﻿using HousewareWebAPI.Helpers.Common;
+﻿using Houseware.WebAPI.Data;
+using HousewareWebAPI.Data.Entities;
+using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Models;
 using HousewareWebAPI.Models;
+using HousewareWebAPI.Services;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 
@@ -18,11 +22,15 @@ namespace HousewareWebAPI.Helpers.Services
 
     public class OAuthService : IOAuthService
     {
+        private readonly HousewareContext _context;
         private readonly AppSettings _appSettings;
+        private readonly ICustomerService _customerService;
 
-        public OAuthService(IOptions<AppSettings> appSettings)
+        public OAuthService(HousewareContext context, IOptions<AppSettings> appSettings, ICustomerService customerService)
         {
+            _context = context;
             _appSettings = appSettings.Value;
+            _customerService = customerService;
         }
 
         public Response GenOAuthURI()
@@ -58,7 +66,7 @@ namespace HousewareWebAPI.Helpers.Services
             return response;
         }
 
-        public OAuthToken GetOAuthToken(string code)
+        private OAuthToken GetOAuthToken(string code)
         {
             var request = (HttpWebRequest)WebRequest.Create("https://accounts.google.com/o/oauth2/token");
             string param = string.Format(
@@ -94,7 +102,7 @@ namespace HousewareWebAPI.Helpers.Services
             }            
         }
 
-        public OAuthUserInfo GetOAuthUserInfo(OAuthToken oAuthToken)
+        private OAuthUserInfo GetOAuthUserInfo(OAuthToken oAuthToken)
         {
             var request = (HttpWebRequest)WebRequest.Create("https://www.googleapis.com/oauth2/v1/userinfo");
             request.Method = "GET";
@@ -115,6 +123,33 @@ namespace HousewareWebAPI.Helpers.Services
             }
         }
 
+        private Customer GetCusByEmail(string email)
+        {
+            return _context.Customers.Where(c => c.Email == email).FirstOrDefault();
+        }
+
+        public Customer Register(OAuthUserInfo model)
+        {
+            try
+            {
+                Customer customer = new()
+                {
+                    Email = model.Email,
+                    VerifyEmail = "Y",
+                    FullName = model.Name,
+                    Picture = model.Picture,
+                };
+                _context.Customers.Add(customer);
+                _context.SaveChanges();
+
+                return GetCusByEmail(model.Email);
+            }
+            catch (Exception e)
+            {
+                throw new Exception("Can't register new customers with this email! " + e.Message);
+            }
+        }
+
         public Response VerifyEmail(string code)
         {
             var response = new Response();
@@ -126,10 +161,22 @@ namespace HousewareWebAPI.Helpers.Services
             }
 
             var oAuthToken = GetOAuthToken(code);
+            var oAuthUserInfo = GetOAuthUserInfo(oAuthToken);
 
-            var responseString = GetOAuthUserInfo(oAuthToken);
+            var customerExist = GetCusByEmail(oAuthUserInfo.Email);
+            if (customerExist == null)
+            {
+                customerExist = Register(oAuthUserInfo);
+            }
+
+            if (customerExist.VerifyEmail != "Y")
+            {
+                response.SetCode(CodeTypes.Err_Exist);
+                response.SetResult(string.Format(@"Account with this phone number [{0}] has not been verified!", customerExist.Email));
+            }
+
             response.SetCode(CodeTypes.Success);
-            response.SetResult(responseString);
+            response.SetResult(_customerService.GetLoginRespone(customerExist));
             return response;
         }
     }

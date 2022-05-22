@@ -1,4 +1,5 @@
 using Houseware.WebAPI.Data;
+using Houseware.WebAPI.Helpers.Middleware;
 using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Filter;
 using HousewareWebAPI.Helpers.Services;
@@ -10,6 +11,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 
 namespace HousewareWebAPI
@@ -41,6 +43,7 @@ namespace HousewareWebAPI
             });
 
             services.AddDbContext<HousewareContext>(options => options.UseSqlServer(appSettings.DBConnectionString));
+
             services.AddControllers(options =>
             {
                 options.Filters.Add(new ResponseValidationActionFilter());
@@ -58,11 +61,13 @@ namespace HousewareWebAPI
             services.AddScoped<IClassificationService, ClassificationService>();
             services.AddScoped<ICategoryService, CategoryService>();
             services.AddScoped<IProductService, ProductService>();
-            services.AddScoped<ISpecificationService, SpecificationService>();            
+            services.AddScoped<ISpecificationService, SpecificationService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<ICartService, CartService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IOptions<AppSettings> appSettings)
         {
             if (env.IsDevelopment())
             {
@@ -80,6 +85,11 @@ namespace HousewareWebAPI
                 .AllowAnyOrigin()
                 .AllowAnyHeader()
                 .AllowAnyMethod());
+
+            if (appSettings.Value.UsingJWT)
+            {
+                app.UseMiddleware<JwtMiddleware>();
+            }
 
             app.UseAuthorization();
 
