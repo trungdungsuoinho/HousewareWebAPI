@@ -139,4 +139,4 @@ BEGIN
 END
 GO
 
-
+SELECT * FROM Products Order By CreateDate
