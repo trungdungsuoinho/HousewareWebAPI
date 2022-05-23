@@ -92,6 +92,20 @@ BEGIN
 END
 GO
 
+GO
+DROP TRIGGER UpperKeyProCartInsert;
+GO
+CREATE TRIGGER UpperKeyProCartInsert
+ON Carts
+AFTER INSERT AS
+BEGIN
+	UPDATE Carts
+	SET ProductId = UPPER(i.ProductId)
+	FROM inserted i
+	WHERE Carts.ProductId = i.ProductId
+END
+GO
+
 --- Trigger set false for property enable cascase
 GO
 DROP TRIGGER EnableClassificationCascase;
@@ -124,3 +138,5 @@ BEGIN
 	END
 END
 GO
+
+
