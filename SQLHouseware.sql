@@ -139,4 +139,31 @@ BEGIN
 END
 GO
 
-SELECT * FROM Products Order By CreateDate
+--- Modyfi sort of address when set default a address
+GO
+DROP TRIGGER SetDefaultAddressInsert;
+GO
+CREATE TRIGGER SetDefaultAddressInsert
+ON Addresses
+FOR INSERT AS
+BEGIN
+	UPDATE Addresses
+	SET Sort = 1
+	FROM inserted i
+	WHERE Addresses.Sort = 0 AND Addresses.AddressId != i.AddressId;
+END
+GO
+
+--GO
+--DROP TRIGGER SetDefaultAddressUpdate;
+--GO
+--CREATE TRIGGER SetDefaultAddressUpdate
+--ON Addresses
+--FOR UPDATE AS
+--BEGIN
+--	UPDATE Addresses
+--	SET Sort = 1
+--	FROM inserted i
+--	WHERE Addresses.AddressId != i.AddressId AND Addresses.Sort = 0;
+--END
+--GO

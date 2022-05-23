@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -15,5 +17,10 @@ namespace HousewareWebAPI.Data.Entities
         public DateTime? DateOfBirth { get; set; }
         public bool? Gender { get; set; }
         public DateTime? CreateDate { get; set; }
+
+        // Navigation
+        public ICollection<Cart> Carts { get; set; }
+        public ICollection<Address> Addresses { get; set; }
+        
     }
 }

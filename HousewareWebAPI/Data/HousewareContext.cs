@@ -16,7 +16,7 @@ namespace Houseware.WebAPI.Data
         public DbSet<ProductSpecification> ProductSpecifications { get; set; }
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Cart> Carts { get; set; }
-
+        public DbSet<Address> Addresses { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,6 +51,9 @@ namespace Houseware.WebAPI.Data
 
             // Cart
             modelBuilder.Entity<Cart>().HasKey(c => new { c.CustomerId, c.ProductId });
+
+            // Address
+            modelBuilder.Entity<Address>().Property(a => a.Sort).HasDefaultValue(int.MaxValue);
         }
     }
 }
