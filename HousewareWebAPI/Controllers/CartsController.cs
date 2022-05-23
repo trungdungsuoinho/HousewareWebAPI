@@ -2,7 +2,6 @@
 using HousewareWebAPI.Models;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
 
 namespace HousewareWebAPI.Controllers
 {
