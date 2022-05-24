@@ -1,4 +1,5 @@
 ﻿using HousewareWebAPI.Data.Entities;
+using HousewareWebAPI.Helpers.Common;
 using Microsoft.EntityFrameworkCore;
 
 namespace Houseware.WebAPI.Data
@@ -17,6 +18,10 @@ namespace Houseware.WebAPI.Data
         public DbSet<Customer> Customers { get; set; }
         public DbSet<Cart> Carts { get; set; }
         public DbSet<Address> Addresses { get; set; }
+        public DbSet<Store> Stores { get; set; }
+        public DbSet<Stored> Storeds { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderDetail> OrderDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -54,6 +59,20 @@ namespace Houseware.WebAPI.Data
 
             // Address
             modelBuilder.Entity<Address>().Property(a => a.Sort).HasDefaultValue(int.MaxValue);
+
+            // Store
+
+            // Stored
+            modelBuilder.Entity<Stored>().HasKey(s => new { s.StoreId, s.ProductId });
+
+            // Order
+            modelBuilder.Entity<Order>().Property(p => p.OrderDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Order>().Property(p => p.PaymentType).HasDefaultValue(GlobalVariable.PayCod);
+            modelBuilder.Entity<Order>().Property(p => p.StatusPaid).HasDefaultValue(false);
+
+            // OrderDetail
+            modelBuilder.Entity<OrderDetail>().HasKey(o => new { o.OrderId, o.ProductId });
+
         }
     }
 }

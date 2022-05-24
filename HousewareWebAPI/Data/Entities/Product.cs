@@ -1,7 +1,7 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -44,7 +44,6 @@ namespace HousewareWebAPI.Data.Entities
         [JsonIgnore]
         public Category Category { get; set; }
         public ICollection<ProductSpecification> ProductSpecifications { get; set; }
-        [JsonIgnore]
-        public ICollection<Cart> Carts { get; set; }
+        public ICollection<Stored> Storeds { get; set; }
     }
 }
