@@ -21,10 +21,11 @@ namespace HousewareWebAPI.Data.Entities
         public string Detail { get; set; }
         public string Note { get; set; }
         public bool Type { get; set; }
-        public int? Sort { get; set; }
+        public DateTime ModifyDate { get; set; }
 
         // Navigation
         public Guid CustomerId { get; set; }
         public Customer Customer { get; set; }
+        public Customer DefaultCustomer { get; set; }
     }
 }

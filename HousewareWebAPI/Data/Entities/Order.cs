@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,7 +15,8 @@ namespace HousewareWebAPI.Data.Entities
         public bool StatusPaid { get; set; }
 
         // Navigation
-        public Guid CustomerId { get; set; }
+        public Guid? CustomerId { get; set; }
+        [JsonIgnore]
         public Customer Customer { get; set; }
         public Guid AddressId { get; set; }
         public Address Address { get; set; }

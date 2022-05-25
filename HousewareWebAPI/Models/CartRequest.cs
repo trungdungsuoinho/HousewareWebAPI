@@ -17,7 +17,7 @@ namespace HousewareWebAPI.Models
         public string ProductId { get; set; }
         [MyRequired]
         [MyRange(1, int.MaxValue)]
-        public int Quantity { get; set; }
+        public uint Quantity { get; set; }
     }
 
     public class DeleteProInCartRequest
