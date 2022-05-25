@@ -58,7 +58,7 @@ namespace HousewareWebAPI.Services
                     Detail = address.Detail,
                     Note = address.Note,
                     Type = address.Type,
-                    Default = address.Sort == 0
+                    //Default = address.Sort == 0
                 };
 
                 response.SetCode(CodeTypes.Success);
@@ -78,7 +78,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var addresses = _context.Addresses.Where(c => c.CustomerId == customerId).OrderBy(c => c.Sort).ToList();
+                var addresses = _context.Addresses.Where(c => c.CustomerId == customerId).OrderBy(c => c.ModifyDate).ToList();
                 GetAddressesResponse addressesResponse = new()
                 {
                     CustomerId = customerId,
@@ -97,7 +97,7 @@ namespace HousewareWebAPI.Services
                         Detail = address.Detail,
                         Note = address.Note,
                         Type = address.Type,
-                        Default = address.Sort == 0
+                        //Default = address.Sort == 0
                     });
                 }
                 response.SetCode(CodeTypes.Success);
@@ -129,7 +129,7 @@ namespace HousewareWebAPI.Services
                     Detail = model.Detail,
                     Note = model.Note,
                     Type = model.Type,
-                    Sort = model.Default == true ? 0 : null
+                    //Sort = model.Default == true ? 0 : null
                 });
                 _context.SaveChanges();
                 return GetAddresses(model.CustomerId);
@@ -164,7 +164,7 @@ namespace HousewareWebAPI.Services
                 address.Detail = model.Detail;
                 address.Note = model.Note;
                 address.Type = model.Type;
-                address.Sort = model.Default == true ? 0 : null;
+                //address.Sort = model.Default == true ? 0 : null;
 
                 _context.Entry(address).State = EntityState.Modified;
                 _context.SaveChanges();

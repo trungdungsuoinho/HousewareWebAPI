@@ -53,12 +53,14 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Customer>().HasIndex(u => u.Email).IsUnique(true);
             modelBuilder.Entity<Customer>().Property(u => u.VerifyEmail).HasDefaultValue("N");
             modelBuilder.Entity<Customer>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Customer>().HasOne(c => c.DefaultAddress).WithOne(a => a.DefaultCustomer).HasForeignKey<Customer>(c => c.DefaultAddressId);
 
             // Cart
             modelBuilder.Entity<Cart>().HasKey(c => new { c.CustomerId, c.ProductId });
 
             // Address
-            modelBuilder.Entity<Address>().Property(a => a.Sort).HasDefaultValue(int.MaxValue);
+            modelBuilder.Entity<Address>().Property(a => a.ModifyDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Address>().HasOne(a => a.Customer).WithMany(c => c.Addresses).HasForeignKey(a => a.CustomerId);
 
             // Store
 

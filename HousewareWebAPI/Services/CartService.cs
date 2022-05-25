@@ -67,7 +67,7 @@ namespace HousewareWebAPI.Services
                             ItemPrice = cart.Product.Price * cart.Quantity
                         });
                     }
-                    cartResponse.TotalPrice = cartResponse.Product.Sum(p => p.ItemPrice);
+                    cartResponse.TotalPrice = (uint)cartResponse.Product.Sum(p => p.ItemPrice);
                 }
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(cartResponse);

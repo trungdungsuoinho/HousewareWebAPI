@@ -9,6 +9,7 @@ namespace HousewareWebAPI.Data.Entities
         public int StoreId { get; set; }
         [MyRequired]
         public string Name { get; set; }
+        [MyRequired]
         public string Province { get; set; }
         [MyRequired]
         public string District { get; set; }
@@ -20,5 +21,7 @@ namespace HousewareWebAPI.Data.Entities
         // Navigation
         [JsonIgnore]
         public ICollection<Stored> Storeds { get; set; }
+        [JsonIgnore]
+        public ICollection<Order> Orders { get; set; }
     }
 }

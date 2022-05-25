@@ -8,7 +8,7 @@ namespace HousewareWebAPI.Models
         public string ProductId { get; set; }
         public string Name { get; set; }
         public string Avatar { get; set; }
-        public int Price { get; set; }
+        public uint Price { get; set; }
         //public int Review { get; set; }
         //public float Rate { get; set; }
     }
@@ -18,7 +18,7 @@ namespace HousewareWebAPI.Models
         public string ProductId { get; set; }
         public string Name { get; set; }
         public List<string> Images { get; set; }
-        public int Price { get; set; }
+        public uint Price { get; set; }
         public int View { get; set; }
         public List<string> Highlights { get; set; }
         public List<GetSpecByPro> Specifications { get; set; }
@@ -31,7 +31,7 @@ namespace HousewareWebAPI.Models
         public string Name { get; set; }
         public string Avatar { get; set; }
         public List<string> Images { get; set; }
-        public int Price { get; set; }
+        public uint Price { get; set; }
         public int View { get; set; }
         public List<string> Highlights { get; set; }
         //public string Overview { get; set; }
