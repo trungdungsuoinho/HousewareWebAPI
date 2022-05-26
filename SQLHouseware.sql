@@ -153,3 +153,4 @@ BEGIN
 END
 GO
 
+SELECT * FROM Addresses
