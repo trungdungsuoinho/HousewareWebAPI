@@ -6,28 +6,79 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Services
 {
     public interface IStoreService
     {
+        public Response GetStore(int storeId);
+        public Response GetStores();
+        public Response AddStore(AddStoreRequest model);
+        public Response UpdateStore(UpdateStoreRequest model);
+        public Response DeleteStore(int storeId);
     }
 
     public class StoreService : IStoreService
     {
         private readonly HousewareContext _context;
-        //private readonly AppSettings _appSettings;
 
-        public StoreService(HousewareContext context/*, IOptions<AppSettings> appSettings*/)
+        public StoreService(HousewareContext context)
         {
             _context = context;
-            //_appSettings = appSettings.Value;
         }
 
         private Store GetById(int id)
         {
             return _context.Stores.Where(s => s.StoreId == id).FirstOrDefault();
+        }
+
+        public Response GetStore(int storeId)
+        {
+            Response response = new();
+            try
+            {
+                var store = GetById(storeId);
+                if (store == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("There not exists a Store with such StoreId");
+                    return response;
+                }
+                response.SetResult(new GetStoreResponse(store));
+                response.SetCode(CodeTypes.Success);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+            }
+            return response;
+        }
+
+        public Response GetStores()
+        {
+            Response response = new();
+            try
+            {
+                var stores = _context.Stores.ToList();
+                List<GetStoresResponse> storesResponse = new();
+                if (stores != null && stores.Count > 0)
+                {
+                    foreach (var store in stores)
+                    {
+                        storesResponse.Add(new GetStoresResponse(store));
+                    }
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(storesResponse);
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+            }
+            return response;
         }
 
         public Response AddStore(AddStoreRequest model)
@@ -84,23 +135,19 @@ namespace HousewareWebAPI.Services
             return response;
         }
 
-        public Response DeleteStore(DeteleStoreRequest model)
+        public Response DeleteStore(int storeId)
         {
             Response response = new();
             try
             {
-                var store = GetById(model.StoreId);
+                var store = GetById(storeId);
                 if (store == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
                     response.SetResult("There not exists a Store with such StoreId");
-                    store.Name = model.Name;
-                    store.Province = model.Province;
-                    store.District = model.District;
-                    store.Ward = model.Ward;
-                    store.Detail = model.Detail;
+                    return response;
                 }
-                _context.Entry(store).State = EntityState.Modified;
+                _context.Entry(store).State = EntityState.Deleted;
                 _context.SaveChanges();
                 response.SetCode(CodeTypes.Success);
             }

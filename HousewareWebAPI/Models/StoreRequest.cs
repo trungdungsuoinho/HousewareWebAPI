@@ -1,8 +1,4 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Models
 {
@@ -21,12 +17,6 @@ namespace HousewareWebAPI.Models
     }
 
     public class UpdateStoreRequest : AddStoreRequest
-    {
-        [MyRequired]
-        public int StoreId { get; set; }
-    }
-
-    public class DeteleStoreRequest
     {
         [MyRequired]
         public int StoreId { get; set; }
