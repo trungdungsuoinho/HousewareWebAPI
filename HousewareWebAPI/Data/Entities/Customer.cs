@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -24,6 +23,7 @@ namespace HousewareWebAPI.Data.Entities
         public ICollection<Address> Addresses { get; set; }
         public ICollection<Order> Orders { get; set; }
         public Guid? DefaultAddressId { get; set; }
+        [JsonIgnore]
         public Address DefaultAddress { get; set; }
 
     }

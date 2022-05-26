@@ -18,7 +18,7 @@ namespace HousewareWebAPI.Data.Entities
         public Guid? CustomerId { get; set; }
         [JsonIgnore]
         public Customer Customer { get; set; }
-        public Guid AddressId { get; set; }
+        public Guid? AddressId { get; set; }
         public Address Address { get; set; }
         public int StoreId { get; set; }
         public Store Store { get; set; }

@@ -106,6 +106,20 @@ BEGIN
 END
 GO
 
+GO
+DROP TRIGGER SetModifyDateAddressUpdate;
+GO
+CREATE TRIGGER SetModifyDateAddressUpdate
+ON Addresses
+AFTER UPDATE AS
+BEGIN
+	UPDATE Addresses
+	SET ModifyDate = GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'
+	FROM inserted i
+	WHERE Addresses.AddressId != i.AddressId;
+END
+GO
+
 --- Trigger set false for property enable cascase
 GO
 DROP TRIGGER EnableClassificationCascase;
@@ -139,31 +153,3 @@ BEGIN
 END
 GO
 
---- Modyfi sort of address when set default a address
-GO
-DROP TRIGGER SetDefaultAddressInsert;
-GO
-CREATE TRIGGER SetDefaultAddressInsert
-ON Addresses
-FOR INSERT AS
-BEGIN
-	UPDATE Addresses
-	SET Sort = 1
-	FROM inserted i
-	WHERE Addresses.Sort = 0 AND Addresses.AddressId != i.AddressId;
-END
-GO
-
---GO
---DROP TRIGGER SetDefaultAddressUpdate;
---GO
---CREATE TRIGGER SetDefaultAddressUpdate
---ON Addresses
---FOR UPDATE AS
---BEGIN
---	UPDATE Addresses
---	SET Sort = 1
---	FROM inserted i
---	WHERE Addresses.AddressId != i.AddressId AND Addresses.Sort = 0;
---END
---GO
