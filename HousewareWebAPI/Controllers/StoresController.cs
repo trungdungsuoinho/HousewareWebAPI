@@ -5,57 +5,57 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HousewareWebAPI.Controllers
 {
-    [Route("api/v1/addresses")]
+    [Route("api/v1/stores")]
     [ApiController]
-    public class AddressesController : ControllerBase
+    public class StoresController : ControllerBase
     {
-        private readonly IAddressService _addressService;
+        private readonly IStoreService _storeService;
 
-        public AddressesController(IAddressService addressService)
+        public StoresController(IStoreService storeService)
         {
-            _addressService = addressService;
+            _storeService = storeService;
         }
 
-        [HttpPost("getaddress")]
-        public IActionResult GetAddress([FromBody] GetAddressRequest model)
+        [HttpGet("{id}")]
+        public IActionResult GetStore([FromRoute] int id)
         {
-            var response = _addressService.GetAddress(model.AddressId);
+            var response = _storeService.GetStore(id);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
 
-        [HttpPost("getaddresses")]
-        public IActionResult GetAddesses([FromBody] GetAddressesRequest model)
+        [HttpGet]
+        public IActionResult GetStores()
         {
-            var response = _addressService.GetAddresses(model.CustomerId);
+            var response = _storeService.GetStores();
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
 
-        [HttpPost("addaddress")]
-        public IActionResult AddAddress(AddAddressRequest model)
+        [HttpPost]
+        public IActionResult AddAddress(AddStoreRequest model)
         {
-            var response = _addressService.AddAddress(model);
+            var response = _storeService.AddStore(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
 
-        [HttpPut("updateaddress")]
-        public IActionResult UpdateAddress(UpdateAddressRequest model)
+        [HttpPut]
+        public IActionResult UpdateAddress(UpdateStoreRequest model)
         {
-            var response = _addressService.UpdateAddress(model);
+            var response = _storeService.UpdateStore(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
 
-        [HttpPost("deleteaddress")]
-        public IActionResult DeleteAddress(GetAddressRequest model)
+        [HttpDelete("{id}")]
+        public IActionResult DeleteAddress([FromRoute] int id)
         {
-            var response = _addressService.DeleteAddress(model.AddressId);
+            var response = _storeService.DeleteStore(id);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
