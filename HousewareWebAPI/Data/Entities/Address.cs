@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
 using System;
+using System.Collections.Generic;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -27,5 +28,6 @@ namespace HousewareWebAPI.Data.Entities
         public Guid CustomerId { get; set; }
         public Customer Customer { get; set; }
         public Customer DefaultCustomer { get; set; }
+        public ICollection<Order> Orders { get; set; }
     }
 }

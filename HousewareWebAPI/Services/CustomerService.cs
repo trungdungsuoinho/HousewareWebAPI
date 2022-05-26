@@ -2,6 +2,7 @@
 using HousewareWebAPI.Data.Entities;
 using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Models;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -17,6 +18,7 @@ namespace HousewareWebAPI.Services
         public Response Register(LoginRequest model);
         public LoginCustomerResponse GetLoginRespone(Customer customer);
         public Response Login(LoginRequest model);
+        public bool UpdateDefaultAddress(DefaultAddressRequest model);
     }
 
     public class CustomerService : ICustomerService
@@ -145,6 +147,19 @@ namespace HousewareWebAPI.Services
                 response.SetResult(e.Message);
                 return response;
             }
+        }
+
+        public bool UpdateDefaultAddress(DefaultAddressRequest model)
+        {
+            var customer = _context.Customers.Where(c => c.CustomerId == model.CustomerId).FirstOrDefault();
+            if (customer == null)
+            {
+                throw new Exception("Customer does not exist!");
+            }
+            customer.DefaultAddressId = model.AddressId;
+            _context.Entry(customer).State = EntityState.Modified;
+            _context.SaveChanges();
+            return true;
         }
     }
 }

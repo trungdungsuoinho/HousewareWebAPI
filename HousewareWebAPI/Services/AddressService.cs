@@ -21,15 +21,17 @@ namespace HousewareWebAPI.Services
     public class AddressService : IAddressService
     {
         private readonly HousewareContext _context;
+        private readonly ICustomerService _customerService;
 
-        public AddressService(HousewareContext context)
+        public AddressService(HousewareContext context, ICustomerService customerService)
         {
             _context = context;
+            _customerService = customerService;
         }
 
         private Address GetById(Guid addressId)
         {
-            return _context.Addresses.Where(a => a.AddressId == addressId).FirstOrDefault();
+            return _context.Addresses.Where(a => a.AddressId == addressId).Include(a => a.DefaultCustomer).FirstOrDefault();
         }
 
         public Response GetAddress(Guid addressId)
@@ -37,7 +39,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var address = _context.Addresses.Where(c => c.AddressId == addressId).FirstOrDefault();
+                var address = _context.Addresses.Where(a => a.AddressId == addressId).Include(a => a.DefaultCustomer).FirstOrDefault();
                 if (address == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
@@ -58,7 +60,7 @@ namespace HousewareWebAPI.Services
                     Detail = address.Detail,
                     Note = address.Note,
                     Type = address.Type,
-                    //Default = address.Sort == 0
+                    Default = address.DefaultCustomer != null
                 };
 
                 response.SetCode(CodeTypes.Success);
@@ -78,7 +80,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var addresses = _context.Addresses.Where(c => c.CustomerId == customerId).OrderBy(c => c.ModifyDate).ToList();
+                var addresses = _context.Addresses.Where(c => c.CustomerId == customerId).Include(a => a.DefaultCustomer).OrderByDescending(c => c.DefaultCustomer.DefaultAddressId).ThenBy(c => c.DefaultCustomer).ToList();
                 GetAddressesResponse addressesResponse = new()
                 {
                     CustomerId = customerId,
@@ -97,7 +99,7 @@ namespace HousewareWebAPI.Services
                         Detail = address.Detail,
                         Note = address.Note,
                         Type = address.Type,
-                        //Default = address.Sort == 0
+                        Default = address.DefaultCustomer != null
                     });
                 }
                 response.SetCode(CodeTypes.Success);
@@ -114,10 +116,11 @@ namespace HousewareWebAPI.Services
 
         public Response AddAddress(AddAddressRequest model)
         {
+            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
-                _context.Addresses.Add(new Address
+                Address address = new Address
                 {
                     CustomerId = model.CustomerId,
                     Name = model.Name,
@@ -128,14 +131,26 @@ namespace HousewareWebAPI.Services
                     Ward = model.Ward,
                     Detail = model.Detail,
                     Note = model.Note,
-                    Type = model.Type,
-                    //Sort = model.Default == true ? 0 : null
-                });
+                    Type = model.Type
+                };
+                _context.Addresses.Add(address);
                 _context.SaveChanges();
+                if (model.Default == true)
+                {
+                    DefaultAddressRequest defaultAddress = new()
+                    {
+                        AddressId = address.AddressId,
+                        CustomerId = model.CustomerId
+                    };
+                    _customerService.UpdateDefaultAddress(defaultAddress);
+                    _context.SaveChanges();
+                }
+                transaction.Commit();
                 return GetAddresses(model.CustomerId);
             }
             catch (Exception e)
             {
+                transaction.Rollback();
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
                 return response;
@@ -144,6 +159,7 @@ namespace HousewareWebAPI.Services
 
         public Response UpdateAddress(UpdateAddressRequest model)
         {
+            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
@@ -164,14 +180,26 @@ namespace HousewareWebAPI.Services
                 address.Detail = model.Detail;
                 address.Note = model.Note;
                 address.Type = model.Type;
-                //address.Sort = model.Default == true ? 0 : null;
-
                 _context.Entry(address).State = EntityState.Modified;
                 _context.SaveChanges();
+
+                if (model.Default == true)
+                {
+                    DefaultAddressRequest defaultAddress = new()
+                    {
+                        AddressId = address.AddressId,
+                        CustomerId = address.CustomerId
+                    };
+                    _customerService.UpdateDefaultAddress(defaultAddress);
+                    _context.SaveChanges();
+                }
+                transaction.Commit();
+
                 return GetAddresses(model.CustomerId);
             }
             catch (Exception e)
             {
+                transaction.Rollback();
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
                 return response;
@@ -180,6 +208,7 @@ namespace HousewareWebAPI.Services
 
         public Response DeleteAddress(Guid addressId)
         {
+            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
@@ -190,12 +219,19 @@ namespace HousewareWebAPI.Services
                     response.SetResult("This address does not exist in the customer's address book");
                     return response;
                 }
+                DefaultAddressRequest defaultAddress = new()
+                {
+                    CustomerId = address.DefaultCustomer.CustomerId
+                };
+                _customerService.UpdateDefaultAddress(defaultAddress);
                 _context.Addresses.Remove(address);
                 _context.SaveChanges();
+                transaction.Commit();
                 return GetAddresses(address.CustomerId);
             }
             catch (Exception e)
             {
+                transaction.Rollback();
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
                 return response;
