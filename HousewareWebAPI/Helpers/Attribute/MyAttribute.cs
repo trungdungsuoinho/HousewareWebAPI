@@ -62,7 +62,7 @@ namespace HousewareWebAPI.Helpers.Attribute
 
         public override string FormatErrorMessage(string name)
         {
-            return string.Format("The value of field [{0}] must be greater than {1} and less than {2}", name, Minimum, Maximum);
+            return string.Format("The value of field [{0}] must be between {1} and {2}", name, Minimum, Maximum);
         }
     }
 

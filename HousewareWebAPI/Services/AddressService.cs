@@ -39,30 +39,14 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var address = _context.Addresses.Where(a => a.AddressId == addressId).Include(a => a.DefaultCustomer).FirstOrDefault();
+                var address = GetById(addressId);
                 if (address == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
                     response.SetResult("This address could not be found in the customer's address book");
                     return response;
                 }
-
-                GetAddressResponse addressResponse = new()
-                {
-                    AddressId = address.AddressId,
-                    CustomerId = address.CustomerId,
-                    Name = address.Name,
-                    Company = address.Company,
-                    Phone = address.Phone,
-                    Province = address.Province,
-                    District = address.District,
-                    Ward = address.Ward,
-                    Detail = address.Detail,
-                    Note = address.Note,
-                    Type = address.Type,
-                    Default = address.DefaultCustomer != null
-                };
-
+                AddressResponse addressResponse = new(address);
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(addressResponse);
                 return response;
@@ -80,27 +64,19 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var addresses = _context.Addresses.Where(c => c.CustomerId == customerId).Include(a => a.DefaultCustomer).OrderByDescending(c => c.DefaultCustomer.DefaultAddressId).ThenBy(c => c.DefaultCustomer).ToList();
-                GetAddressesResponse addressesResponse = new()
+                List<AddressesResponse> addressesResponse = new();
+                var addresses = _context.Addresses
+                    .Where(c => c.CustomerId == customerId)
+                    .Include(a => a.DefaultCustomer)
+                    .OrderByDescending(c => c.DefaultCustomer.DefaultAddressId)
+                    .ThenBy(c => c.ModifyDate)
+                    .ToList();
+                if (addresses != null && addresses.Count > 0)
                 {
-                    CustomerId = customerId,
-                    Addresses = new List<AddressResponse>()
-                };
-                foreach (var address in addresses)
-                {
-                    addressesResponse.Addresses.Add(new AddressResponse{
-                        AddressId = address.AddressId,
-                        Name = address.Name,
-                        Company = address.Company,
-                        Phone = address.Phone,
-                        Province = address.Province,
-                        District = address.District,
-                        Ward = address.Ward,
-                        Detail = address.Detail,
-                        Note = address.Note,
-                        Type = address.Type,
-                        Default = address.DefaultCustomer != null
-                    });
+                    foreach (var address in addresses)
+                    {
+                        addressesResponse.Add(new AddressesResponse(address));
+                    }
                 }
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(addressesResponse);
@@ -120,7 +96,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                Address address = new Address
+                Address address = new()
                 {
                     CustomerId = model.CustomerId,
                     Name = model.Name,
@@ -219,11 +195,14 @@ namespace HousewareWebAPI.Services
                     response.SetResult("This address does not exist in the customer's address book");
                     return response;
                 }
-                DefaultAddressRequest defaultAddress = new()
+                if (address.DefaultCustomer != null)
                 {
-                    CustomerId = address.DefaultCustomer.CustomerId
-                };
-                _customerService.UpdateDefaultAddress(defaultAddress);
+                    DefaultAddressRequest defaultAddress = new()
+                    {
+                        CustomerId = address.DefaultCustomer.CustomerId
+                    };
+                    _customerService.UpdateDefaultAddress(defaultAddress);
+                }
                 _context.Addresses.Remove(address);
                 _context.SaveChanges();
                 transaction.Commit();

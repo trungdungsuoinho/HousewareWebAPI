@@ -12,9 +12,9 @@ namespace HousewareWebAPI.Services
     public interface ICartService
     {
         public Response GetCart(Guid customerId);
-        public Response AddProIntoCart(AddProIntoCartRequest model);
-        public Response UpdateProInCart(AddProIntoCartRequest model);
-        public Response DeleteProInCart(DeleteProInCartRequest model);
+        public Response AddProIntoCart(AddCartRequest model);
+        public Response UpdateProInCart(AddCartRequest model);
+        public Response DeleteProInCart(DeleteCartRequest model);
     }
 
     public class CartService : ICartService
@@ -81,7 +81,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response AddProIntoCart(AddProIntoCartRequest model)
+        public Response AddProIntoCart(AddCartRequest model)
         {
             Response response = new();
             try
@@ -113,11 +113,16 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response UpdateProInCart(AddProIntoCartRequest model)
+        public Response UpdateProInCart(AddCartRequest model)
         {
             Response response = new();
             try
             {
+                if (model.Quantity == 0)
+                {
+                    return DeleteProInCart(model);
+                }
+
                 Cart cart = new();
                 cart = GetCart(model.CustomerId, model.ProductId);
                 if (cart == null)
@@ -142,7 +147,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response DeleteProInCart(DeleteProInCartRequest model)
+        public Response DeleteProInCart(DeleteCartRequest model)
         {
             Response response = new();
             try

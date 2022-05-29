@@ -44,6 +44,7 @@ namespace HousewareWebAPI.Data.Entities
         [JsonIgnore]
         public Category Category { get; set; }
         public ICollection<ProductSpecification> ProductSpecifications { get; set; }
+        [JsonIgnore]
         public ICollection<Stored> Storeds { get; set; }
     }
 }
