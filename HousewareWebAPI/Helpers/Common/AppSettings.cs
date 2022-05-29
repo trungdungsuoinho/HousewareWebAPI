@@ -11,5 +11,8 @@
         public string OAuthRedirectURI { get; set; }
         public bool UsingJWT { get; set; }
         public string Secret { get; set; }
+        public int GHNClientId { get; set; }
+        public int GHNShopId { get; set; }
+        public string GHNToken { get; set; }
     }
 }

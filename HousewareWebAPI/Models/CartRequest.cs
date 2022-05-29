@@ -3,24 +3,20 @@ using System;
 
 namespace HousewareWebAPI.Models
 {
-    public class GetCartRequest
+    public class GetCartsRequest
     {
         [MyRequired]
         public Guid CustomerId { get; set; }
     }
 
-    public class AddProIntoCartRequest
+    public class AddCartRequest : DeleteCartRequest
     {
         [MyRequired]
-        public Guid CustomerId { get; set; }
-        [MyRequired]
-        public string ProductId { get; set; }
-        [MyRequired]
-        [MyRange(1, int.MaxValue)]
+        [MyRange(0, int.MaxValue)]
         public uint Quantity { get; set; }
     }
 
-    public class DeleteProInCartRequest
+    public class DeleteCartRequest
     {
         [MyRequired]
         public Guid CustomerId { get; set; }

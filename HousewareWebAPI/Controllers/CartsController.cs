@@ -22,7 +22,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="customerId"></param>
         /// <returns></returns>
         [HttpPost("getcart")]
-        public IActionResult GetAllProductInCart([FromBody] GetCartRequest model)
+        public IActionResult GetAllProductInCart([FromBody] GetCartsRequest model)
         {
             var response = _cartService.GetCart(model.CustomerId);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -36,7 +36,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("addcart")]
-        public IActionResult AddProductIntoCart(AddProIntoCartRequest model)
+        public IActionResult AddProductIntoCart(AddCartRequest model)
         {
             var response = _cartService.AddProIntoCart(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -50,7 +50,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut("updatecart")]
-        public IActionResult UpdateProductInCart(AddProIntoCartRequest model)
+        public IActionResult UpdateProductInCart(AddCartRequest model)
         {
             var response = _cartService.UpdateProInCart(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -64,7 +64,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPost("deletecart")]
-        public IActionResult DeleteProductInCart(DeleteProInCartRequest model)
+        public IActionResult DeleteProductInCart(DeleteCartRequest model)
         {
             var response = _cartService.DeleteProInCart(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);

@@ -10,7 +10,6 @@ namespace HousewareWebAPI.Data.Entities
 
         // Navigation
         public Store Store { get; set; }
-        [JsonIgnore]
         public Product Product { get; set; }
     }
 }
