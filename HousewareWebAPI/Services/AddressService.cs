@@ -64,7 +64,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                List<AddressesResponse> addressesResponse = new();
+                List<AddressResponse> addressesResponse = new();
                 var addresses = _context.Addresses
                     .Where(c => c.CustomerId == customerId)
                     .Include(a => a.DefaultCustomer)
@@ -75,7 +75,7 @@ namespace HousewareWebAPI.Services
                 {
                     foreach (var address in addresses)
                     {
-                        addressesResponse.Add(new AddressesResponse(address));
+                        addressesResponse.Add(new AddressResponse(address));
                     }
                 }
                 response.SetCode(CodeTypes.Success);
