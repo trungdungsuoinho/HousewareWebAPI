@@ -7,9 +7,10 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public string Name { get; set; }
         [MyRequired]
-        public string Province { get; set; }
-        [MyRequired]
-        public string District { get; set; }
+        [MyRegularExpression(@"^([0-9]{10})$")]
+        public string Phone { get; set; }
+        public int Province { get; set; }
+        public int District { get; set; }
         [MyRequired]
         public string Ward { get; set; }
         [MyRequired]
@@ -18,7 +19,6 @@ namespace HousewareWebAPI.Models
 
     public class UpdateStoreRequest : AddStoreRequest
     {
-        [MyRequired]
         public int StoreId { get; set; }
     }
 }

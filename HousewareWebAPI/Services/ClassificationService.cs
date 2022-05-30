@@ -112,7 +112,10 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                var classification = _context.Classifications.FirstOrDefault(c => c.ClassificationId == id.ToUpper() && (enable == null || c.Enable == enable));
+                var classification = _context.Classifications
+                    .Where(c => c.ClassificationId == id.ToUpper() && (enable == null || c.Enable == enable))
+                    .Include(c => c.Categories)
+                    .FirstOrDefault();
                 if (classification == null)
                 {
                     response.SetCode(CodeTypes.Err_NotFound);
@@ -128,6 +131,19 @@ namespace HousewareWebAPI.Services
                         ImageBanner = classification.ImageBanner,
                         Enable = classification.Enable
                     };
+                    if (classification.Categories != null && classification.Categories.Count > 0)
+                    {
+                        result.Categories = new();
+                        foreach (var category in classification.Categories)
+                        {
+                            result.Categories.Add(new CatInGetClass {
+                                CategoryId = category.CategoryId,
+                                Name = category.Name,
+                                Slogan = category.Slogan,
+                                Image = category.Image
+                            });
+                        }
+                    }
                     response.SetCode(CodeTypes.Success);
                     response.SetResult(result);
                 }
