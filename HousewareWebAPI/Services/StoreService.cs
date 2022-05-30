@@ -1,6 +1,7 @@
 ﻿using Houseware.WebAPI.Data;
 using HousewareWebAPI.Data.Entities;
 using HousewareWebAPI.Helpers.Common;
+using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -21,10 +22,12 @@ namespace HousewareWebAPI.Services
     public class StoreService : IStoreService
     {
         private readonly HousewareContext _context;
+        private readonly IGHNService _gHNService;
 
-        public StoreService(HousewareContext context)
+        public StoreService(HousewareContext context, IGHNService gHNService)
         {
             _context = context;
+            _gHNService = gHNService;
         }
 
         private Store GetById(int id)
@@ -86,9 +89,11 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
+                var shopId = _gHNService.RegisterShop(model);
                 Store store = new()
                 {
                     Name = model.Name,
+                    Phone = model.Phone,
                     Province = model.Province,
                     District = model.District,
                     Ward = model.Ward,

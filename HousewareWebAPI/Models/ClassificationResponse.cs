@@ -37,5 +37,6 @@ namespace HousewareWebAPI.Models
         public string ImageBanner { get; set; }
         //public JArray Story { get; set; } // Currently not implemented
         public bool Enable { get; set; }
+        public List<CatInGetClass> Categories { get; set; }
     }
 }

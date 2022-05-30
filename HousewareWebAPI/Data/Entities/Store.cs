@@ -7,12 +7,13 @@ namespace HousewareWebAPI.Data.Entities
     public class Store
     {
         public int StoreId { get; set; }
+        public int ShopId { get; set; }
         [MyRequired]
         public string Name { get; set; }
         [MyRequired]
-        public string Province { get; set; }
-        [MyRequired]
-        public string District { get; set; }
+        public string Phone { get; set; }
+        public int Province { get; set; }
+        public int District { get; set; }
         [MyRequired]
         public string Ward { get; set; }
         [MyRequired]
