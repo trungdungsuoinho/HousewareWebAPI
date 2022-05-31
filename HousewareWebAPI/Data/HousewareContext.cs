@@ -37,8 +37,8 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Product>().Property(p => p.Sort).HasDefaultValue(int.MaxValue);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasDefaultValue(0);
             modelBuilder.Entity<Product>().Property(p => p.View).HasDefaultValue(0);
-            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
-            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Product>().Property(p => p.Enable).HasDefaultValue(false);
 
             // Specification
@@ -52,14 +52,14 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Customer>().Property(u => u.VerifyPhone).HasDefaultValue("N");
             modelBuilder.Entity<Customer>().HasIndex(u => u.Email).IsUnique(true);
             modelBuilder.Entity<Customer>().Property(u => u.VerifyEmail).HasDefaultValue("N");
-            modelBuilder.Entity<Customer>().Property(p => p.CreateDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Customer>().Property(p => p.CreateDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Customer>().HasOne(c => c.DefaultAddress).WithOne(a => a.DefaultCustomer).HasForeignKey<Customer>(c => c.DefaultAddressId);
 
             // Cart
             modelBuilder.Entity<Cart>().HasKey(c => new { c.CustomerId, c.ProductId });
 
             // Address
-            modelBuilder.Entity<Address>().Property(a => a.ModifyDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Address>().Property(a => a.ModifyDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Address>().HasOne(a => a.Customer).WithMany(c => c.Addresses).HasForeignKey(a => a.CustomerId);
 
             // Store
@@ -68,7 +68,7 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Stored>().HasKey(s => new { s.StoreId, s.ProductId });
 
             // Order
-            modelBuilder.Entity<Order>().Property(p => p.OrderDate).HasDefaultValueSql("GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Order>().Property(p => p.OrderDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Order>().Property(p => p.PaymentType).HasDefaultValue(GlobalVariable.PayCod);
             modelBuilder.Entity<Order>().Property(p => p.StatusPaid).HasDefaultValue(false);
             modelBuilder.Entity<Order>().HasOne(o => o.Address).WithMany(a => a.Orders).OnDelete(DeleteBehavior.SetNull);

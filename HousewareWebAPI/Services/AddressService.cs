@@ -200,7 +200,7 @@ namespace HousewareWebAPI.Services
                     DefaultAddressRequest defaultAddress = new()
                     {
                         CustomerId = address.DefaultCustomer.CustomerId,
-                        AddressId = _context.Addresses.Where(a => a.CustomerId == address.DefaultCustomer.CustomerId).OrderBy(a => a.ModifyDate).FirstOrDefault().AddressId
+                        AddressId = _context.Addresses.Where(a => a.CustomerId == address.DefaultCustomer.CustomerId && a.AddressId != address.AddressId).OrderBy(a => a.ModifyDate).FirstOrDefault().AddressId
                     };
                     _customerService.UpdateDefaultAddress(defaultAddress);
                 }
