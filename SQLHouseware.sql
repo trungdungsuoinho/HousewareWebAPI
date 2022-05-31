@@ -61,7 +61,7 @@ BEGIN
 	DECLARE @productId NVARCHAR(450), @categoryId NVARCHAR(450);
 	SELECT @productId = i.ProductId, @categoryId = i.CategoryId FROM inserted i;
 	UPDATE Products SET CategoryId = UPPER(@categoryId) WHERE ProductId = @productId AND CategoryId != UPPER(@categoryId) COLLATE SQL_Latin1_General_CP1_CS_AS;
-	UPDATE Products SET ModifyDate = GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'	WHERE ProductId = @productId;
+	UPDATE Products SET ModifyDate = GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'	WHERE ProductId = @productId;
 END
 GO
 
@@ -107,6 +107,20 @@ END
 GO
 
 GO
+DROP TRIGGER UpperKeyProStoredInsert;
+GO
+CREATE TRIGGER UpperKeyProStoredInsert
+ON Storeds
+AFTER INSERT AS
+BEGIN
+	UPDATE Storeds
+	SET ProductId = UPPER(i.ProductId)
+	FROM inserted i
+	WHERE Storeds.ProductId = i.ProductId
+END
+GO
+
+GO
 DROP TRIGGER SetModifyDateAddressUpdate;
 GO
 CREATE TRIGGER SetModifyDateAddressUpdate
@@ -114,7 +128,7 @@ ON Addresses
 AFTER UPDATE AS
 BEGIN
 	UPDATE Addresses
-	SET ModifyDate = GETDATE() AT TIME ZONE 'N. Central Asia Standard Time'
+	SET ModifyDate = GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'
 	FROM inserted i
 	WHERE Addresses.AddressId != i.AddressId;
 END
@@ -153,4 +167,6 @@ BEGIN
 END
 GO
 
-SELECT * FROM Addresses
+SELECT AddressId, ModifyDate, CustomerId FROM Addresses Order By ModifyDate Desc
+SELECT * FROM Customers
+SELECT GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'
