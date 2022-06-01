@@ -6,38 +6,24 @@ namespace HousewareWebAPI.Models
     {
         public int StoreId { get; set; }
         public string Name { get; set; }
-        public int Province { get; set; }
-        public int District { get; set; }
-        public string Ward { get; set; }
+        public int ProvinceId { get; set; }
+        public string ProvinceName { get; set; }
+        public int DistrictId { get; set; }
+        public string DistrictName { get; set; }
+        public string WardId { get; set; }
+        public string WardName { get; set; }
         public string Detail { get; set; }
         public GetStoreResponse(Store model)
         {
             StoreId = model.StoreId;
             Name = model.Name;
-            Province = model.Province;
-            District = model.District;
-            Ward = model.Ward;
+            ProvinceId = model.ProvinceId;
+            ProvinceName = model.ProvinceName;
+            DistrictId = model.DistrictId;
+            DistrictName = model.DistrictName;
+            WardId = model.WardId;
+            WardName = model.WardName;
             Detail = model.Detail;
-        }
-    }
-
-    public class GetStoresResponse
-    {
-        public int StoreId { get; set; }
-        public string Name { get; set; }
-        public string FullAddress { get; set; }
-        public GetStoresResponse(Store store)
-        {
-            StoreId = store.StoreId;
-            Name = store.Name;
-            FullAddress = string.Format(@"{0}, {1}, {2}, {3}", store.Detail, store.Ward, store.District, store.Province);
-        }
-
-        public void SetValue(Store store)
-        {
-            StoreId = store.StoreId;
-            Name = store.Name;
-            FullAddress = string.Format(@"{0}, {1}, {2}, {3}", store.Detail, store.Ward, store.District, store.Province);
         }
     }
 }

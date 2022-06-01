@@ -9,9 +9,12 @@ namespace HousewareWebAPI.Models
         public string Name { get; set; }
         public string Company { get; set; }
         public string Phone { get; set; }
-        public string Province { get; set; }
-        public string District { get; set; }
-        public string Ward { get; set; }
+        public int ProvinceId { get; set; }
+        public string ProvinceName { get; set; }
+        public int DistrictId { get; set; }
+        public string DistrictName { get; set; }
+        public string WardId { get; set; }
+        public string WardName { get; set; }
         public string Detail { get; set; }
         public string Note { get; set; }
         public bool Type { get; set; }
@@ -22,9 +25,12 @@ namespace HousewareWebAPI.Models
             Name = address.Name;
             Company = address.Company;
             Phone = address.Phone;
-            Province = address.Province;
-            District = address.District;
-            Ward = address.Ward;
+            ProvinceId = address.ProvinceId;
+            ProvinceName = address.ProvinceName;
+            DistrictId = address.DistrictId;
+            DistrictName = address.DistrictName;
+            WardId = address.WardId;
+            WardName = address.WardName;
             Detail = address.Detail;
             Note = address.Note;
             Type = address.Type;

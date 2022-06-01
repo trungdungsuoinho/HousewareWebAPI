@@ -102,9 +102,12 @@ namespace HousewareWebAPI.Services
                     Name = model.Name,
                     Company = model.Company,
                     Phone = model.Phone,
-                    Province = model.Province,
-                    District = model.District,
-                    Ward = model.Ward,
+                    ProvinceId = model.ProvinceId,
+                    ProvinceName = model.ProvinceName,
+                    DistrictId = model.DistrictId,
+                    DistrictName = model.DistrictName,
+                    WardId = model.WardId,
+                    WardName = model.WardName,
                     Detail = model.Detail,
                     Note = model.Note,
                     Type = model.Type
@@ -150,20 +153,23 @@ namespace HousewareWebAPI.Services
                 address.Name = model.Name;
                 address.Company = model.Company;
                 address.Phone = model.Phone;
-                address.Province = model.Province;
-                address.District = model.District;
-                address.Ward = model.Ward;
+                address.ProvinceId = model.ProvinceId;
+                address.ProvinceName = model.ProvinceName;
+                address.DistrictId = model.DistrictId;
+                address.DistrictName = model.DistrictName;
+                address.WardId = model.WardId;
+                address.WardName = model.WardName;
                 address.Detail = model.Detail;
                 address.Note = model.Note;
                 address.Type = model.Type;
                 _context.Entry(address).State = EntityState.Modified;
                 _context.SaveChanges();
 
-                if (model.Default == true)
+                if (address.DefaultCustomer != null)
                 {
                     DefaultAddressRequest defaultAddress = new()
                     {
-                        AddressId = address.AddressId,
+                        AddressId = model.Default == true ? address.AddressId : null,
                         CustomerId = address.CustomerId
                     };
                     _customerService.UpdateDefaultAddress(defaultAddress);
@@ -200,7 +206,10 @@ namespace HousewareWebAPI.Services
                     DefaultAddressRequest defaultAddress = new()
                     {
                         CustomerId = address.DefaultCustomer.CustomerId,
-                        AddressId = _context.Addresses.Where(a => a.CustomerId == address.DefaultCustomer.CustomerId && a.AddressId != address.AddressId).OrderBy(a => a.ModifyDate).FirstOrDefault().AddressId
+                        AddressId = _context.Addresses
+                        .Where(a => a.CustomerId == address.DefaultCustomer.CustomerId && a.AddressId != address.AddressId)
+                        .OrderBy(a => a.ModifyDate)
+                        .FirstOrDefault()?.AddressId
                     };
                     _customerService.UpdateDefaultAddress(defaultAddress);
                 }

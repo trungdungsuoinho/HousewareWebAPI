@@ -168,5 +168,5 @@ END
 GO
 
 SELECT AddressId, ModifyDate, CustomerId FROM Addresses Order By ModifyDate Desc
-SELECT * FROM Customers
+SELECT * FROM Stores
 SELECT GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'
