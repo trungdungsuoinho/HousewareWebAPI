@@ -35,7 +35,7 @@ namespace HousewareWebAPI.Controllers
         }
 
         [HttpPost]
-        public IActionResult AddAddress(AddStoreRequest model)
+        public IActionResult AddStore(AddStoreRequest model)
         {
             var response = _storeService.AddStore(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -43,22 +43,22 @@ namespace HousewareWebAPI.Controllers
             return Ok(response);
         }
 
-        [HttpPut]
-        public IActionResult UpdateAddress(UpdateStoreRequest model)
-        {
-            var response = _storeService.UpdateStore(model);
-            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
-            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
-            return Ok(response);
-        }
+        //[HttpPut]
+        //public IActionResult UpdateAddress(UpdateStoreRequest model)
+        //{
+        //    var response = _storeService.UpdateStore(model);
+        //    if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+        //    if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+        //    return Ok(response);
+        //}
 
-        [HttpDelete("{id}")]
-        public IActionResult DeleteAddress([FromRoute] int id)
-        {
-            var response = _storeService.DeleteStore(id);
-            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
-            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
-            return Ok(response);
-        }
+        //[HttpDelete("{id}")]
+        //public IActionResult DeleteAddress([FromRoute] int id)
+        //{
+        //    var response = _storeService.DeleteStore(id);
+        //    if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+        //    if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+        //    return Ok(response);
+        //}
     }
 }

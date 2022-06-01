@@ -12,10 +12,16 @@ namespace HousewareWebAPI.Data.Entities
         public string Name { get; set; }
         [MyRequired]
         public string Phone { get; set; }
-        public int Province { get; set; }
-        public int District { get; set; }
+        public int ProvinceId { get; set; }
         [MyRequired]
-        public string Ward { get; set; }
+        public string ProvinceName { get; set; }
+        public int DistrictId { get; set; }
+        [MyRequired]
+        public string DistrictName { get; set; }
+        [MyRequired]
+        public string WardId { get; set; }
+        [MyRequired]
+        public string WardName { get; set; }
         [MyRequired]
         public string Detail { get; set; }
 

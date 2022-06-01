@@ -162,21 +162,39 @@ namespace HousewareWebAPI.Services
             var response = new Response();
             try
             {
-                var classifications = _context.Classifications.Where(c => enable == null || c.Enable == enable).OrderBy(c => c.Sort).ToList();
-                var result = new List<GetClassAdminResponse>();
+                var classifications = _context.Classifications
+                    .Where(c => enable == null || c.Enable == enable)
+                    .Include(c => c.Categories)
+                    .OrderBy(c => c.Sort).ToList();
+                var results = new List<GetClassAdminResponse>();
                 foreach (var classification in classifications)
                 {
-                    result.Add(new GetClassAdminResponse()
+                    var result = new GetClassAdminResponse()
                     {
                         ClassificationId = classification.ClassificationId,
                         Name = classification.Name,
                         ImageMenu = classification.ImageMenu,
                         ImageBanner = classification.ImageBanner,
                         Enable = classification.Enable
-                    });
+                    };
+                    if (classification.Categories != null && classification.Categories.Count > 0)
+                    {
+                        result.Categories = new();
+                        foreach (var category in classification.Categories)
+                        {
+                            result.Categories.Add(new CatInGetClass
+                            {
+                                CategoryId = category.CategoryId,
+                                Name = category.Name,
+                                Slogan = category.Slogan,
+                                Image = category.Image
+                            });
+                        }
+                    }
+                    results.Add(result);
                 }
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(result);
+                response.SetResult(results);
                 return response;
             }
             catch (Exception e)

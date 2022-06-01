@@ -1,13 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json.Linq;
 
 namespace HousewareWebAPI.Helpers.Models
 {
-    public class GHNDistrictResponse
+    public class GHNResponse
 	{
-		public int DistrictID { get; set; }
-		public int ProvinceID { get; set; }
-		public string DistrictName { get; set; }
-		public string Code { get; set; }
-		public List<string> NameExtension { get; set; }
+		public int Code { get; set; }
+		public string Message { get; set; }
+		public JObject Data { get; set; }
 	}
 }
