@@ -11,7 +11,7 @@ namespace HousewareWebAPI.Helpers.Services
 {
     public interface IGHNService
     {
-        public int RegisterShop(GHNRegisterShopRequest model);
+        public JObject RegisterShop(GHNRegisterShopRequest model);
         public Response GetProvince();
     }
 
@@ -24,7 +24,7 @@ namespace HousewareWebAPI.Helpers.Services
             _appSettings = appSettings.Value;
         }
 
-        public int RegisterShop(GHNRegisterShopRequest model)
+        public JObject RegisterShop(GHNRegisterShopRequest model)
         {
             var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shop/register");
             httpWebRequest.Method = "POST";
@@ -46,7 +46,32 @@ namespace HousewareWebAPI.Helpers.Services
 
             var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
 
-            return result.Data.Value<int>("shop_id");
+            return result.Data;
+        }
+
+        public JObject CalculateFee(GHNCalculateFeeRequest model)
+        {
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee");
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            httpWebRequest.ContentType = "application/json; charset=utf-8";
+
+            string resultJson;
+
+            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
+            {
+                streamWriter.Write(JObject.FromObject(model));
+            }
+
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                resultJson = streamReader.ReadToEnd();
+            }
+
+            var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
+
+            return result.Data;
         }
 
         public Response GetProvince()

@@ -118,7 +118,52 @@ namespace HousewareWebAPI.Services
 
                 try
                 {
-                    store.ShopId = _gHNService.RegisterShop(registerShop);
+                    store.ShopId = _gHNService.RegisterShop(registerShop).Value<int>("shop_id");
+                    _context.Entry(store).State = EntityState.Modified;
+                    _context.SaveChanges();
+                    response.SetCode(CodeTypes.Success);
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    response.SetCode(CodeTypes.Err_AccFail);
+                    response.SetResult("Create a store in GiaoHangNhanh service failed! " + e.Message);
+                    transaction.Rollback();
+                }
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                transaction.Rollback();
+            }
+            return response;
+        }
+
+        public Response GetFeeStore(GetFeeRequest model)
+        {
+            using var transaction = _context.Database.BeginTransaction();
+            Response response = new();
+            try
+            {
+                var stores = _context.Stores.ToList();
+                var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).ToList();
+
+                _context.Stores.Add(store);
+                _context.SaveChanges();
+
+                GHNRegisterShopRequest registerShop = new()
+                {
+                    District_id = model.DistrictId,
+                    Ward_code = model.WardId,
+                    Name = model.Name,
+                    Phone = model.Phone,
+                    Address = model.Detail
+                };
+
+                try
+                {
+                    store.ShopId = _gHNService.RegisterShop(registerShop).Value<int>("shop_id");
                     _context.Entry(store).State = EntityState.Modified;
                     _context.SaveChanges();
                     response.SetCode(CodeTypes.Success);
