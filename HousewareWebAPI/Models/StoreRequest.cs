@@ -1,4 +1,5 @@
 ﻿using HousewareWebAPI.Helpers.Attribute;
+using System;
 
 namespace HousewareWebAPI.Models
 {
@@ -27,5 +28,13 @@ namespace HousewareWebAPI.Models
     public class UpdateStoreRequest : AddStoreRequest
     {
         public int StoreId { get; set; }
+    }
+
+    public class GetFeeRequest
+    {
+        [MyRequired]
+        public Guid CustomerId { get; set; }
+        [MyRequired]
+        public Guid AddressId { get; set; }
     }
 }
