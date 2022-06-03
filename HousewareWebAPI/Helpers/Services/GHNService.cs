@@ -12,6 +12,7 @@ namespace HousewareWebAPI.Helpers.Services
     public interface IGHNService
     {
         public JObject RegisterShop(GHNRegisterShopRequest model);
+        public JObject CalculateFee(GHNCalculateFeeRequest model);
         public Response GetProvince();
     }
 

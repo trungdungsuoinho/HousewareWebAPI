@@ -5,7 +5,6 @@ using HousewareWebAPI.Helpers.Models;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -146,35 +145,64 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var stores = _context.Stores.ToList();
-                var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).ToList();
-
-                _context.Stores.Add(store);
-                _context.SaveChanges();
-
-                GHNRegisterShopRequest registerShop = new()
+                var calculateFees = (from s in _context.Stores.ToList()
+                              from a in _context.Addresses.Where(a => a.CustomerId == model.CustomerId).ToList()
+                              select new {
+                                  s.ShopId,
+                                  StoreDistrictId = s.DistrictId,
+                                  s.Name,
+                                  a.AddressId,
+                                  a.WardId,
+                                  a.DistrictId,
+                                  a.Detail,
+                                  Fee = new uint()
+                              }).ToList();
+                var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).Include(c => c.Product).ToList();
+                GHNCalculateFeeRequest calculateFeeRequest = new()
                 {
-                    District_id = model.DistrictId,
-                    Ward_code = model.WardId,
-                    Name = model.Name,
-                    Phone = model.Phone,
-                    Address = model.Detail
+                    Insurance_value = (int)carts.Sum(c => c.Product.Price),
+                    Weight = (int)carts.Sum(c => c.Product.Weight)
                 };
 
-                try
+                foreach (var calculateFee in calculateFees)
                 {
-                    store.ShopId = _gHNService.RegisterShop(registerShop).Value<int>("shop_id");
-                    _context.Entry(store).State = EntityState.Modified;
-                    _context.SaveChanges();
-                    response.SetCode(CodeTypes.Success);
-                    transaction.Commit();
+                    calculateFeeRequest.From_district_id = calculateFee.StoreDistrictId;
+                    calculateFeeRequest.To_ward_code = calculateFee.WardId;
+                    calculateFeeRequest.To_district_id = calculateFee.DistrictId;
+                    var fee = _gHNService.CalculateFee(calculateFeeRequest);
+                    try
+                    {
+                        calculateFees.Where(c => c.ShopId == calculateFee.ShopId && c.AddressId == calculateFee.AddressId).FirstOrDefault().Fee = fee.Value<uint>("service_fee");
+                    }
+                    catch (Exception e)
+                    {
+
+                    }
                 }
-                catch (Exception e)
-                {
-                    response.SetCode(CodeTypes.Err_AccFail);
-                    response.SetResult("Create a store in GiaoHangNhanh service failed! " + e.Message);
-                    transaction.Rollback();
-                }
+
+                //GHNRegisterShopRequest registerShop = new()
+                //{
+                //    District_id = model.DistrictId,
+                //    Ward_code = model.WardId,
+                //    Name = model.Name,
+                //    Phone = model.Phone,
+                //    Address = model.Detail
+                //};
+
+                //try
+                //{
+                //    store.ShopId = _gHNService.RegisterShop(registerShop).Value<int>("shop_id");
+                //    _context.Entry(store).State = EntityState.Modified;
+                //    _context.SaveChanges();
+                //    response.SetCode(CodeTypes.Success);
+                //    transaction.Commit();
+                //}
+                //catch (Exception e)
+                //{
+                //    response.SetCode(CodeTypes.Err_AccFail);
+                //    response.SetResult("Create a store in GiaoHangNhanh service failed! " + e.Message);
+                //    transaction.Rollback();
+                //}
             }
             catch (Exception e)
             {

@@ -34,7 +34,7 @@ namespace HousewareWebAPI.Models
     {
         [MyRequired]
         public Guid CustomerId { get; set; }
-        [MyRequired]
-        public Guid AddressId { get; set; }
+        //[MyRequired]
+        //public Guid AddressId { get; set; }
     }
 }

@@ -19,7 +19,11 @@ namespace HousewareWebAPI.Models
         public string Name { get; set; }
         public List<string> Images { get; set; }
         public uint Price { get; set; }
-        public int View { get; set; }
+        public uint Weight { get; set; }
+        public uint Length { get; set; }
+        public uint Width { get; set; }
+        public uint Height { get; set; }
+        public uint View { get; set; }
         public List<string> Highlights { get; set; }
         public List<GetSpecByPro> Specifications { get; set; }
     }
@@ -32,7 +36,11 @@ namespace HousewareWebAPI.Models
         public string Avatar { get; set; }
         public List<string> Images { get; set; }
         public uint Price { get; set; }
-        public int View { get; set; }
+        public uint Weight { get; set; }
+        public uint Length { get; set; }
+        public uint Width { get; set; }
+        public uint Height { get; set; }
+        public uint View { get; set; }
         public List<string> Highlights { get; set; }
         //public string Overview { get; set; }
         //public string Design { get; set; }
