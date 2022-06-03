@@ -170,3 +170,15 @@ GO
 SELECT AddressId, ModifyDate, CustomerId FROM Addresses Order By ModifyDate Desc
 SELECT * FROM Stores
 SELECT GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'
+
+SELECT p.ProductId, p.Name, s.SpecificationId, s.Name, ps.Value
+FROM Products p
+INNER JOIN ProductSpecifications ps ON p.ProductId = ps.ProductId
+INNER JOIN Specifications s ON ps.SpecificationId = s.SpecificationId
+WHERE s.SpecificationId = 'KICHTHUOC'
+
+SELECT * FROM Addresses
+
+SELECT s.ShopId, a.AddressId
+FROM Stores s, Addresses a
+WHERE a.CustomerId = '9AFFBCD5-2E26-42D6-7EA6-08DA3BB497FA'

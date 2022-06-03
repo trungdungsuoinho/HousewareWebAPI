@@ -15,6 +15,10 @@ namespace HousewareWebAPI.Models
         public ImageInput Avatar { get; set; }
         public List<ImageInput> Images { get; set; }
         public uint Price { get; set; }
+        public uint Weight { get; set; }
+        public uint Length { get; set; }
+        public uint Width { get; set; }
+        public uint Height { get; set; }
         public List<string> Highlights { get; set; }
         public List<AddValueSpec> Specifications { get; set; }
         public bool? Enable { get; set; }

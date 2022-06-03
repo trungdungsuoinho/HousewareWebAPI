@@ -62,6 +62,10 @@ namespace HousewareWebAPI.Services
                         Name = product.Name,
                         Images = JsonConvert.DeserializeObject<List<string>>(product.Images),
                         Price = product.Price,
+                        Weight = product.Weight,
+                        Length = product.Length,
+                        Width = product.Width,
+                        Height = product.Height,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
                         Specifications = _specificationService.GetSpecByProduct(product.ProductId)
@@ -100,6 +104,10 @@ namespace HousewareWebAPI.Services
                         Avatar = product.Avatar,
                         Images = JsonConvert.DeserializeObject<List<string>>(product.Images),
                         Price = product.Price,
+                        Weight = product.Weight,
+                        Length = product.Length,
+                        Width = product.Width,
+                        Height = product.Height,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
                         Specifications = _specificationService.GetSpecByProduct(product.ProductId),
@@ -137,6 +145,10 @@ namespace HousewareWebAPI.Services
                         Avatar = product.Avatar,
                         Images = JsonConvert.DeserializeObject<List<string>>(product.Images),
                         Price = product.Price,
+                        Weight = product.Weight,
+                        Length = product.Length,
+                        Width = product.Width,
+                        Height = product.Height,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
                         Specifications = _specificationService.GetSpecByProduct(product.ProductId),
@@ -174,6 +186,10 @@ namespace HousewareWebAPI.Services
                         Avatar = product.Avatar,
                         Images = JsonConvert.DeserializeObject<List<string>>(product.Images),
                         Price = product.Price,
+                        Weight = product.Weight,
+                        Length = product.Length,
+                        Width = product.Width,
+                        Height = product.Height,
                         View = product.View,
                         Highlights = JsonConvert.DeserializeObject<List<string>>(product.Highlights),
                         Specifications = _specificationService.GetSpecByProduct(product.ProductId),
@@ -211,6 +227,10 @@ namespace HousewareWebAPI.Services
                             Avatar = _imageService.UploadImage(model.Avatar),
                             Images = JsonConvert.SerializeObject(_imageService.UploadImages(model.Images)),
                             Price = model.Price,
+                            Weight = model.Weight,
+                            Length = model.Length,
+                            Width = model.Width,
+                            Height = model.Height,
                             Highlights = JsonConvert.SerializeObject(model.Highlights),
                             Enable = model.Enable == true,
                         };
@@ -281,6 +301,10 @@ namespace HousewareWebAPI.Services
                         }
                         product.Images = JsonConvert.SerializeObject(_imageService.UploadImages(model.Images)).ToString();
                         product.Price = model.Price;
+                        product.Weight = model.Weight;
+                        product.Length = model.Length;
+                        product.Width = model.Width;
+                        product.Height = model.Height;
                         product.Highlights = JsonConvert.SerializeObject(model.Highlights);
                         product.Enable = model.Enable == true;
 

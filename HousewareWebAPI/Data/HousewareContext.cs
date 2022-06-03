@@ -36,6 +36,10 @@ namespace Houseware.WebAPI.Data
             // Product
             modelBuilder.Entity<Product>().Property(p => p.Sort).HasDefaultValue(int.MaxValue);
             modelBuilder.Entity<Product>().Property(p => p.Price).HasDefaultValue(0);
+            modelBuilder.Entity<Product>().Property(p => p.Weight).HasDefaultValue(0);
+            modelBuilder.Entity<Product>().Property(p => p.Length).HasDefaultValue(0);
+            modelBuilder.Entity<Product>().Property(p => p.Width).HasDefaultValue(0);
+            modelBuilder.Entity<Product>().Property(p => p.Height).HasDefaultValue(0);
             modelBuilder.Entity<Product>().Property(p => p.View).HasDefaultValue(0);
             modelBuilder.Entity<Product>().Property(p => p.CreateDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Product>().Property(p => p.ModifyDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
