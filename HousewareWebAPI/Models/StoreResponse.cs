@@ -2,7 +2,7 @@
 
 namespace HousewareWebAPI.Models
 {
-    public class GetStoreResponse
+    public class StoreResponse
     {
         public int StoreId { get; set; }
         public string Name { get; set; }
@@ -13,7 +13,7 @@ namespace HousewareWebAPI.Models
         public string WardId { get; set; }
         public string WardName { get; set; }
         public string Detail { get; set; }
-        public GetStoreResponse(Store model)
+        public StoreResponse(Store model)
         {
             StoreId = model.StoreId;
             Name = model.Name;
@@ -25,5 +25,12 @@ namespace HousewareWebAPI.Models
             WardName = model.WardName;
             Detail = model.Detail;
         }
+    }
+
+    public class GetCalculateFee
+    {
+        public StoreResponse Store { get; set; }
+        public AddressResponse Address { get; set; }
+        public uint Fee { get; set; }
     }
 }

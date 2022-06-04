@@ -20,13 +20,13 @@ namespace HousewareWebAPI.Controllers
             _gHNService = gHNService;
         }
 
-        [HttpGet("province")]
-        public IActionResult GetProvince()
-        {
-            var response = _gHNService.GetProvince();
-            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
-            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
-            return Ok(response);
-        }
+        //[HttpGet("province")]
+        //public IActionResult GetProvince()
+        //{
+        //    var response = _gHNService.GetProvince();
+        //    if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+        //    if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+        //    return Ok(response);
+        //}
     }
 }

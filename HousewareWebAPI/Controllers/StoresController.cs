@@ -43,6 +43,15 @@ namespace HousewareWebAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost("fee")]
+        public IActionResult CalculateFeeAllStore(GetFeeRequest model)
+        {
+            var response = _storeService.GetFeeStore(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
         //[HttpPut]
         //public IActionResult UpdateAddress(UpdateStoreRequest model)
         //{
