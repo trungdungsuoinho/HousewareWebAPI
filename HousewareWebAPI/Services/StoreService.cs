@@ -16,6 +16,7 @@ namespace HousewareWebAPI.Services
         public Response GetStore(int storeId);
         public Response GetStores();
         public Response AddStore(AddStoreRequest model);
+        public Response GetFeeStore(GetFeeRequest model);
         //public Response UpdateStore(UpdateStoreRequest model);
         //public Response DeleteStore(int storeId);
     }
@@ -48,7 +49,7 @@ namespace HousewareWebAPI.Services
                     response.SetResult("There not exists a Store with such StoreId");
                     return response;
                 }
-                response.SetResult(new GetStoreResponse(store));
+                response.SetResult(new StoreResponse(store));
                 response.SetCode(CodeTypes.Success);
                 return response;
             }
@@ -66,12 +67,12 @@ namespace HousewareWebAPI.Services
             try
             {
                 var stores = _context.Stores.ToList();
-                List<GetStoreResponse> storesResponse = new();
+                List<StoreResponse> storesResponse = new();
                 if (stores != null && stores.Count > 0)
                 {
                     foreach (var store in stores)
                     {
-                        storesResponse.Add(new GetStoreResponse(store));
+                        storesResponse.Add(new StoreResponse(store));
                     }
                 }
                 response.SetCode(CodeTypes.Success);
@@ -141,22 +142,15 @@ namespace HousewareWebAPI.Services
 
         public Response GetFeeStore(GetFeeRequest model)
         {
-            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
                 var calculateFees = (from s in _context.Stores.ToList()
-                              from a in _context.Addresses.Where(a => a.CustomerId == model.CustomerId).ToList()
-                              select new {
-                                  s.ShopId,
-                                  StoreDistrictId = s.DistrictId,
-                                  s.Name,
-                                  a.AddressId,
-                                  a.WardId,
-                                  a.DistrictId,
-                                  a.Detail,
-                                  Fee = new uint()
-                              }).ToList();
+                                     from a in _context.Addresses.Where(a => a.CustomerId == model.CustomerId).ToList()
+                                     select new GetCalculateFee() {
+                                         Store = new StoreResponse(s),
+                                         Address = new AddressResponse(a)
+                                     }).ToList();
                 var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).Include(c => c.Product).ToList();
                 GHNCalculateFeeRequest calculateFeeRequest = new()
                 {
@@ -166,49 +160,25 @@ namespace HousewareWebAPI.Services
 
                 foreach (var calculateFee in calculateFees)
                 {
-                    calculateFeeRequest.From_district_id = calculateFee.StoreDistrictId;
-                    calculateFeeRequest.To_ward_code = calculateFee.WardId;
-                    calculateFeeRequest.To_district_id = calculateFee.DistrictId;
-                    var fee = _gHNService.CalculateFee(calculateFeeRequest);
+                    calculateFeeRequest.From_district_id = calculateFee.Store.DistrictId;
+                    calculateFeeRequest.To_ward_code = calculateFee.Address.WardId;
+                    calculateFeeRequest.To_district_id = calculateFee.Address.DistrictId;
                     try
                     {
-                        calculateFees.Where(c => c.ShopId == calculateFee.ShopId && c.AddressId == calculateFee.AddressId).FirstOrDefault().Fee = fee.Value<uint>("service_fee");
+                        calculateFee.Fee = _gHNService.CalculateFee(calculateFeeRequest).Value<uint>("total");
                     }
                     catch (Exception e)
                     {
-
+                        calculateFees.Remove(calculateFee);
                     }
                 }
-
-                //GHNRegisterShopRequest registerShop = new()
-                //{
-                //    District_id = model.DistrictId,
-                //    Ward_code = model.WardId,
-                //    Name = model.Name,
-                //    Phone = model.Phone,
-                //    Address = model.Detail
-                //};
-
-                //try
-                //{
-                //    store.ShopId = _gHNService.RegisterShop(registerShop).Value<int>("shop_id");
-                //    _context.Entry(store).State = EntityState.Modified;
-                //    _context.SaveChanges();
-                //    response.SetCode(CodeTypes.Success);
-                //    transaction.Commit();
-                //}
-                //catch (Exception e)
-                //{
-                //    response.SetCode(CodeTypes.Err_AccFail);
-                //    response.SetResult("Create a store in GiaoHangNhanh service failed! " + e.Message);
-                //    transaction.Rollback();
-                //}
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(calculateFees);
             }
             catch (Exception e)
             {
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
-                transaction.Rollback();
             }
             return response;
         }
