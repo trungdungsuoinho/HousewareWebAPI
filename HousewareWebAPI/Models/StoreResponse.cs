@@ -30,7 +30,6 @@ namespace HousewareWebAPI.Models
     public class GetCalculateFee
     {
         public StoreResponse Store { get; set; }
-        public AddressResponse Address { get; set; }
         public uint Fee { get; set; }
     }
 }
