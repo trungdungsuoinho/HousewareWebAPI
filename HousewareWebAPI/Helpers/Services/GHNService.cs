@@ -1,6 +1,5 @@
 ﻿using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Models;
-using HousewareWebAPI.Models;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -14,7 +13,7 @@ namespace HousewareWebAPI.Helpers.Services
     {
         public JObject RegisterShop(GHNRegisterShopRequest model);
         public JObject CalculateFee(GHNCalculateFeeRequest model);
-        public Response GetProvince();
+        //public Response GetProvince();
     }
 
     public class GHNService : IGHNService
@@ -49,6 +48,11 @@ namespace HousewareWebAPI.Helpers.Services
             var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
 
             return result.Data;
+        }
+
+        private object CalculateBox()
+        {
+            return null;
         }
 
         public JObject CalculateFee(GHNCalculateFeeRequest model)

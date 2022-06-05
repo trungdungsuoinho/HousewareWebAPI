@@ -145,35 +145,45 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var calculateFees = (from s in _context.Stores.ToList()
-                                     from a in _context.Addresses.Where(a => a.CustomerId == model.CustomerId).ToList()
-                                     select new GetCalculateFee() {
-                                         Store = new StoreResponse(s),
-                                         Address = new AddressResponse(a)
-                                     }).ToList();
+                GHNCalculateFeeRequest calculateFeeRequest = new();
                 var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).Include(c => c.Product).ToList();
-                GHNCalculateFeeRequest calculateFeeRequest = new()
+                if (carts == null || carts.Count == 0)
                 {
-                    Insurance_value = (int)carts.Sum(c => c.Product.Price),
-                    Weight = (int)carts.Sum(c => c.Product.Weight)
-                };
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("This cart is empty");
+                    return response;
+                }
+                calculateFeeRequest.CalculateProduct(carts);
 
+                var address = _context.Addresses.Where(a => a.AddressId == model.AddressId && a.CustomerId == model.CustomerId).FirstOrDefault();
+                if (address == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("This address could not be found in the customer's address book");
+                    return response;
+                }
+                calculateFeeRequest.To_ward_code = address.WardId;
+                calculateFeeRequest.To_district_id = address.DistrictId;
+
+                var calculateFees = _context.Stores.Select(s => new GetCalculateFee
+                {
+                    Store = new StoreResponse(s)
+                }).ToList();
                 foreach (var calculateFee in calculateFees)
                 {
                     calculateFeeRequest.From_district_id = calculateFee.Store.DistrictId;
-                    calculateFeeRequest.To_ward_code = calculateFee.Address.WardId;
-                    calculateFeeRequest.To_district_id = calculateFee.Address.DistrictId;
                     try
                     {
                         calculateFee.Fee = _gHNService.CalculateFee(calculateFeeRequest).Value<uint>("total");
                     }
-                    catch (Exception e)
+                    catch
                     {
                         calculateFees.Remove(calculateFee);
                     }
                 }
+
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(calculateFees);
+                response.SetResult(calculateFees.OrderBy(c => c.Fee));
             }
             catch (Exception e)
             {
