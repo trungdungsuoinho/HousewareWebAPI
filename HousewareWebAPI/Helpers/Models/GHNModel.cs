@@ -75,6 +75,7 @@ namespace HousewareWebAPI.Helpers.Models
         public int Payment_type_id { get; set; }
         public string Note { get; set; }
         public string Required_note { get; set; }
+        public List<int> Pick_shift { get; set; } = new List<int> { 1 };
         public List<GHNItem> Items { get; set; } 
     }
 
