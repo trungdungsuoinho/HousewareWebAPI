@@ -13,6 +13,7 @@ namespace HousewareWebAPI.Helpers.Services
     {
         public JObject RegisterShop(GHNRegisterShopRequest model);
         public JObject CalculateFee(GHNCalculateFeeRequest model);
+        public JObject CreateOrder(GHNCreateOrderRequest model, int shopId);
         //public Response GetProvince();
     }
 
@@ -50,11 +51,6 @@ namespace HousewareWebAPI.Helpers.Services
             return result.Data;
         }
 
-        private object CalculateBox()
-        {
-            return null;
-        }
-
         public JObject CalculateFee(GHNCalculateFeeRequest model)
         {
             var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/fee");
@@ -87,11 +83,12 @@ namespace HousewareWebAPI.Helpers.Services
             }
         }
 
-        public JObject PreviewOrder(GHNCalculateFeeRequest model)
+        public JObject CreateOrder(GHNCreateOrderRequest model, int shopId)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview");
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create");
             httpWebRequest.Method = "POST";
             httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            httpWebRequest.Headers.Add("ShopId", shopId.ToString());
             httpWebRequest.ContentType = "application/json; charset=utf-8";
 
             string resultJson;

@@ -9,10 +9,11 @@ namespace HousewareWebAPI.Data.Entities
     public class Order
     {
         public Guid OrderId { get; set; }
-        public string LabelId { get; set; }
+        public string OrderCode { get; set; }
         public DateTime? OrderDate { get; set; }
+        public string OrderStatus { get; set; }
         public string PaymentType { get; set; }
-        public bool StatusPaid { get; set; }
+        public string Note { get; set; }
 
         // Navigation
         public Guid? CustomerId { get; set; }

@@ -87,7 +87,7 @@ namespace HousewareWebAPI.Services
                 {
                     Subject = new ClaimsIdentity(new Claim[]
                     {
-                        new Claim("Role", GlobalVariable.Role_Customer),
+                        new Claim("Role", GlobalVariable.RoleCustomer),
                         new Claim("Id", model.CustomerId.ToString())
                     }),
                     IssuedAt = DateTime.UtcNow,

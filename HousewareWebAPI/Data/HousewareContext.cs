@@ -73,8 +73,8 @@ namespace Houseware.WebAPI.Data
 
             // Order
             modelBuilder.Entity<Order>().Property(p => p.OrderDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
+            modelBuilder.Entity<Order>().Property(p => p.OrderStatus).HasDefaultValue(GlobalVariable.OrderCreate);
             modelBuilder.Entity<Order>().Property(p => p.PaymentType).HasDefaultValue(GlobalVariable.PayCod);
-            modelBuilder.Entity<Order>().Property(p => p.StatusPaid).HasDefaultValue(false);
             modelBuilder.Entity<Order>().HasOne(o => o.Address).WithMany(a => a.Orders).OnDelete(DeleteBehavior.SetNull);
 
             // OrderDetail
