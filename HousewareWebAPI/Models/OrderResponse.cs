@@ -14,5 +14,6 @@ namespace HousewareWebAPI.Models
         public uint TotalPrice { get; set; }
         public uint TotalFee { get; set; }
         public uint Total { get; set; }
+        public DateTime ExpectedDeliveryTime { get; set; }
     }
 }

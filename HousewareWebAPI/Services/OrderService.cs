@@ -101,7 +101,7 @@ namespace HousewareWebAPI.Services
 
                     _context.Carts.RemoveRange(customer.Carts);
                     _context.SaveChanges();
-                    
+
                     // Create order GHN
                     createOrderRequest.Client_order_code = order.OrderId.ToString();
                     createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
@@ -114,14 +114,37 @@ namespace HousewareWebAPI.Services
                     order.OrderCode = jObjCreateOrder.Value<string>("order_code");
                     order.OrderStatus = GlobalVariable.OrderDoing;
                     _context.Entry(order).State = EntityState.Modified;
-                    _context.SaveChanges();
-                    transaction.Commit();
+                    _context.SaveChanges();                    
 
                     // Create response
-
-
+                    CreateOrderResponse orderResponse = new()
+                    {
+                        OrderId = order.OrderId,
+                        OrderCode = order.OrderCode,
+                        SortCode = jObjCreateOrder.Value<string>("sort_code"),
+                        Store = new StoreResponse(store),
+                        Address = new AddressResponse(address),
+                        TotalPrice = (uint)createOrderRequest.Insurance_value,
+                        TotalFee = (uint)jObjCreateOrder.Value<int>("total_fee"),
+                        Total = (uint)(createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee")),
+                        ExpectedDeliveryTime = jObjCreateOrder.Value<DateTime>("expected_delivery_time")
+                    };
+                    var orderDetails = _context.OrderDetails.Where(o => o.OrderId == order.OrderId).Include(o => o.Product).ToList();
+                    foreach (var orderDetail in orderDetails)
+                    {
+                        orderResponse.Products.Add(new ProInCartResponse
+                        {
+                            ProductId = orderDetail.ProductId,
+                            Name = orderDetail.Product.Name,
+                            Avatar = orderDetail.Product.Avatar,
+                            Price = orderDetail.Product.Price,
+                            Quantity = orderDetail.Quantity,
+                            ItemPrice = orderDetail.Product.Price* orderDetail.Quantity
+                        });
+                    }
+                    transaction.Commit();
                     response.SetCode(CodeTypes.Success);
-                    //response.SetResult(calculateFees.OrderBy(c => c.Fee));
+                    response.SetResult(orderResponse);
                 }
                 catch (Exception e)
                 {
