@@ -14,5 +14,8 @@
         public int GHNClientId { get; set; }
         public int GHNShopId { get; set; }
         public string GHNToken { get; set; }
+        public string VNP_TmnCode { get; set; }
+        public string VNP_HashSecret { get; set; }
+        public string VNP_Url { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Services;
+using HousewareWebAPI.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -13,20 +14,22 @@ namespace HousewareWebAPI.Controllers
     [ApiController]
     public class TestController : ControllerBase
     {
-        private readonly IGHNService _gHNService;
+        private readonly IVNPayService _vNPayService;
 
-        public TestController(IGHNService gHNService)
+        public TestController(IVNPayService vNPayService)
         {
-            _gHNService = gHNService;
+            _vNPayService = vNPayService;
         }
 
-        //[HttpGet("province")]
-        //public IActionResult GetProvince()
-        //{
-        //    var response = _gHNService.GetProvince();
-        //    if (response == null) return BadRequest(CodeTypes.Err_Unknown);
-        //    if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
-        //    return Ok(response);
-        //}
+        [HttpGet("payment")]
+        public IActionResult GetProvince()
+        {
+            Response response = new();
+            response.SetResult(_vNPayService.GeneratePaymentURL("https://www.facebook.com/", Guid.NewGuid(), 199000));
+            response.SetCode(CodeTypes.Success);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
     }
 }
