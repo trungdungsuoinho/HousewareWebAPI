@@ -19,7 +19,7 @@ namespace HousewareWebAPI.Controllers
         [HttpPost("create/cod")]
         public IActionResult CreateOrderShipCod([FromBody] CreateOrderRequest model)
         {
-            var response = _orderService.CreateOrder(model);
+            var response = _orderService.CreateOrderOffline(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
