@@ -14,6 +14,7 @@ namespace HousewareWebAPI.Helpers.Services
         public JObject RegisterShop(GHNRegisterShopRequest model);
         public JObject CalculateFee(GHNCalculateFeeRequest model);
         public JObject CreateOrder(GHNCreateOrderRequest model, int shopId);
+        public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId);
         //public Response GetProvince();
     }
 
@@ -86,6 +87,39 @@ namespace HousewareWebAPI.Helpers.Services
         public JObject CreateOrder(GHNCreateOrderRequest model, int shopId)
         {
             var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create");
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            httpWebRequest.Headers.Add("ShopId", shopId.ToString());
+            httpWebRequest.ContentType = "application/json; charset=utf-8";
+
+            string resultJson;
+
+            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
+            {
+                streamWriter.Write(JObject.FromObject(model));
+            }
+
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                resultJson = streamReader.ReadToEnd();
+            }
+
+            var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
+
+            if (result.Code == 200)
+            {
+                return result.Data;
+            }
+            else
+            {
+                throw new Exception(result.Message);
+            }
+        }
+
+        public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId)
+        {
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview");
             httpWebRequest.Method = "POST";
             httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
             httpWebRequest.Headers.Add("ShopId", shopId.ToString());

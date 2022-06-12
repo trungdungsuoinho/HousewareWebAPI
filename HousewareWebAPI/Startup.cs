@@ -6,6 +6,7 @@ using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -56,6 +57,7 @@ namespace HousewareWebAPI
             });
 
             // Dependency servirces
+            //services.AddScoped<HttpContext, HttpContext>();
             services.AddScoped<IOAuthService, OAuthService>();
             services.AddScoped<IImageService, ImageService>();
             services.AddScoped<IClassificationService, ClassificationService>();
