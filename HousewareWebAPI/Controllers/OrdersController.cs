@@ -1,4 +1,5 @@
 ﻿using HousewareWebAPI.Helpers.Common;
+using HousewareWebAPI.Helpers.Models;
 using HousewareWebAPI.Models;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -17,11 +18,28 @@ namespace HousewareWebAPI.Controllers
         }
 
         [HttpPost("create/cod")]
-        public IActionResult CreateOrderShipCod([FromBody] CreateOrderRequest model)
+        public IActionResult CreateOrderShipCod([FromBody] CreateOrderOffineRequest model)
         {
             var response = _orderService.CreateOrderOffline(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpPost("create/onl")]
+        public IActionResult CreateOrderPayment([FromBody] CreateOrderOnlineRequest model)
+        {
+            var response = _orderService.CreateOrderOnline(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpGet("callback/ipn")]
+        public IActionResult CallbackVNPayPayment([FromQuery] CodeIPNURLRequest model)
+        {
+            var response = _orderService.IPNVNPay(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             return Ok(response);
         }
     }

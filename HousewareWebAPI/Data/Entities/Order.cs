@@ -1,8 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Data.Entities
 {
@@ -13,7 +11,9 @@ namespace HousewareWebAPI.Data.Entities
         public DateTime? OrderDate { get; set; }
         public string OrderStatus { get; set; }
         public string PaymentType { get; set; }
+        public uint Amount { get; set; }
         public string Note { get; set; }
+        public string TransactionNo { get; set; }
 
         // Navigation
         public Guid? CustomerId { get; set; }
