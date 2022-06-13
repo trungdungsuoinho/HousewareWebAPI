@@ -159,7 +159,7 @@ namespace HousewareWebAPI.Helpers.Services
 
             string resultJson;
             JObject model = new();
-            model.Add("client_order_code", orderId);
+            model.Add("client_order_code", orderId.ToLower());
             using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
             {
                 streamWriter.Write(model);
