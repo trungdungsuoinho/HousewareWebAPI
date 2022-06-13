@@ -182,3 +182,5 @@ SELECT * FROM Addresses
 SELECT s.ShopId, a.AddressId
 FROM Stores s, Addresses a
 WHERE a.CustomerId = '9AFFBCD5-2E26-42D6-7EA6-08DA3BB497FA'
+
+SELECT * FROM Orders WHERE OrderId = '760b2ffd-c2cd-4f55-1861-08da4ceaabc6';
