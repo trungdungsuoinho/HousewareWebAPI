@@ -17,6 +17,7 @@ namespace HousewareWebAPI.Services
         public Response CreateOrderOffline(CreateOrderOffineRequest model);
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
+        public Response GetResutlOrderOnline(GetPreviewOrderRequest model);
     }
 
     public class OrderService : IOrderService
@@ -280,10 +281,10 @@ namespace HousewareWebAPI.Services
             bool checkSignature = _vNPayService.ValidateSignature(model);
             if (checkSignature)
             {
-                var order = _context.Orders.Where(o => o.OrderId.ToString() == model.Vnp_OrderInfo).FirstOrDefault();
+                var order = _context.Orders.Where(o => o.OrderId.ToString() == model.Vnp_TxnRef).FirstOrDefault();
                 if (order != null)
                 {
-                    if (order.Amount == model.Vnp_Amount)
+                    if (order.Amount == model.Vnp_Amount/100)
                     {
                         if (model.Vnp_ResponseCode == "00" && model.Vnp_TransactionStatus == "00")
                         {
@@ -301,11 +302,11 @@ namespace HousewareWebAPI.Services
                             createOrderRequest.To_name = customer.FullName ?? GlobalVariable.GHNToNameDefault;
 
                             _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
-                            if (customer.Carts == null || customer.Carts.Count == 0)
+                            if (order.OrderDetails == null || order.OrderDetails.Count == 0)
                             {
                                 throw new Exception("This cart is empty!");
                             }
-                            createOrderRequest.SetValueProduct(customer.Carts.ToList());
+                            createOrderRequest.SetValueProduct(order.OrderDetails.ToList());
 
                             var address = _context.Addresses.Where(a => a.AddressId == order.AddressId).FirstOrDefault();
                             if (address == null)
@@ -321,7 +322,7 @@ namespace HousewareWebAPI.Services
                             }
                             createOrderRequest.SetValueStore(store);
                             createOrderRequest.Client_order_code = order.OrderId.ToString();
-                            createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
+                            createOrderRequest.Cod_amount = 0;
                             createOrderRequest.Content = GlobalVariable.GHNContent(createOrderRequest.Client_order_code);
                             createOrderRequest.Payment_type_id = 1;
                             createOrderRequest.Note = order.Note;
@@ -335,23 +336,101 @@ namespace HousewareWebAPI.Services
                         }
                         response.RspCode = "00";
                         response.Message = "Confirm Success";
+                        order.Note = "00";
                     }
                     else
                     {
                         response.RspCode = "04";
                         response.Message = "Invalid amount";
+                        order.Note = "04";
                     }
                 }
                 else
                 {
                     response.RspCode = "01";
                     response.Message = "Order not found";
+                    order.Note = "01";
                 }
             }
             else
             {
                 response.RspCode = "97";
                 response.Message = "Invalid signature";
+            }
+            return response;
+        }
+
+        public Response GetResutlOrderOnline(GetPreviewOrderRequest model)
+        {
+            Response response = new();
+            try
+            {
+                var order = _context.Orders.Where(o => o.OrderId == model.OrderId).FirstOrDefault();
+                if (order == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("Order does not exist!");
+                    return response;
+                }
+
+                _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
+                if (order.OrderDetails == null || order.OrderDetails.Count == 0)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("This order is empty!");
+                    return response;
+                }
+
+                var address = _context.Addresses.Where(a => a.AddressId == order.AddressId).FirstOrDefault();
+                if (address == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("This address could not be found in the customer's address book!");
+                    return response;
+                }
+
+                var store = _context.Stores.Where(s => s.StoreId == order.StoreId).FirstOrDefault();
+                if (store == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("Store does not exist!");
+                    return response;
+                }
+
+                // Create response
+                var jObjGetOrder = _gHNService.GetOrder(order.OrderId.ToString());
+
+                CreateOrderResponse orderResponse = new()
+                {
+                    OrderId = order.OrderId,
+                    OrderCode = order.OrderCode,
+                    SortCode = jObjGetOrder.Value<string>("sort_code"),
+                    Store = new StoreResponse(store),
+                    Address = new AddressResponse(address),
+                    TotalPrice = (uint)jObjGetOrder.Value<int>("insurance_value"),
+                    TotalFee = (uint)jObjGetOrder.Value<int>("total_fee"),
+                    Total = order.Amount,
+                    ExpectedDeliveryTime = jObjGetOrder.Value<DateTime>("leadtime")
+                };
+                foreach (var orderDetail in order.OrderDetails)
+                {
+                    orderResponse.Products.Add(new ProInCartResponse
+                    {
+                        ProductId = orderDetail.ProductId,
+                        Name = orderDetail.Product.Name,
+                        Avatar = orderDetail.Product.Avatar,
+                        Price = orderDetail.Product.Price,
+                        Quantity = orderDetail.Quantity,
+                        ItemPrice = orderDetail.Product.Price * orderDetail.Quantity
+                    });
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(orderResponse);
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
             }
             return response;
         }

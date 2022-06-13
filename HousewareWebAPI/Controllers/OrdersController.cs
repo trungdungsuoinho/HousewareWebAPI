@@ -42,5 +42,14 @@ namespace HousewareWebAPI.Controllers
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             return Ok(response);
         }
+
+        [HttpPost("preview")]
+        public IActionResult GetOrderPayment([FromBody] GetPreviewOrderRequest model)
+        {
+            var response = _orderService.GetResutlOrderOnline(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
     }
 }

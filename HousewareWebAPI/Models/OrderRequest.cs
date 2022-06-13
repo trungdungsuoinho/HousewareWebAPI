@@ -26,4 +26,9 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public string ReturnUrl { get; set; }
     }
+
+    public class GetPreviewOrderRequest
+    {
+        public Guid OrderId { get; set; }
+    }
 }

@@ -15,7 +15,7 @@ namespace HousewareWebAPI.Helpers.Services
         public JObject CalculateFee(GHNCalculateFeeRequest model);
         public JObject CreateOrder(GHNCreateOrderRequest model, int shopId);
         public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId);
-        //public Response GetProvince();
+        public JObject GetOrder(string orderId);
     }
 
     public class GHNService : IGHNService
@@ -150,19 +150,37 @@ namespace HousewareWebAPI.Helpers.Services
             }
         }
 
-        //public Response GetProvince()
-        //{
-        //    Response response = new();
-        //    var request = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/master-data/province");
-        //    request.Method = "POST";
-        //    request.Headers.Add(string.Format("Token: {0}", _appSettings.GHNToken));
-        //    request.ContentType = "application/json";
-        //    using var responseResult = (HttpWebResponse)request.GetResponse();
-        //    var responseString = new StreamReader(responseResult.GetResponseStream()).ReadToEnd();
-        //    var responseJson = JsonConvert.DeserializeObject<JObject>(responseString);
-        //    response.SetCode(CodeTypes.Success);
-        //    response.SetResult(responseJson.GetValue("data"));
-        //    return response;
-        //}
+        public JObject GetOrder(string orderId)
+        {
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/detail-by-client-code");
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            httpWebRequest.ContentType = "application/json; charset=utf-8";
+
+            string resultJson;
+            JObject model = new();
+            model.Add("client_order_code", orderId);
+            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
+            {
+                streamWriter.Write(model);
+            }
+
+            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
+            {
+                resultJson = streamReader.ReadToEnd();
+            }
+
+            var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
+
+            if (result.Code == 200)
+            {
+                return result.Data;
+            }
+            else
+            {
+                throw new Exception(result.Message);
+            }
+        }
     }
 }
