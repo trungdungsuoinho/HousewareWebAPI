@@ -398,7 +398,17 @@ namespace HousewareWebAPI.Services
                 }
 
                 // Create response
-                var jObjGetOrder = _gHNService.GetOrder(order.OrderId.ToString());
+                JObject jObjGetOrder = new();
+                try
+                {
+                    jObjGetOrder = _gHNService.GetOrder(order.OrderId.ToString());
+                }
+                catch (Exception e)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("Order GHN does not exist" + e.Message);
+                    return response;
+                }
 
                 CreateOrderResponse orderResponse = new()
                 {
@@ -408,7 +418,7 @@ namespace HousewareWebAPI.Services
                     Store = new StoreResponse(store),
                     Address = new AddressResponse(address),
                     TotalPrice = (uint)jObjGetOrder.Value<int>("insurance_value"),
-                    TotalFee = (uint)jObjGetOrder.Value<int>("total_fee"),
+                    TotalFee = order.Amount - (uint)jObjGetOrder.Value<int>("insurance_value"),
                     Total = order.Amount,
                     ExpectedDeliveryTime = jObjGetOrder.Value<DateTime>("leadtime")
                 };
