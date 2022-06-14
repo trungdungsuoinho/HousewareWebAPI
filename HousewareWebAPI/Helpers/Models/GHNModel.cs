@@ -10,6 +10,8 @@ namespace HousewareWebAPI.Helpers.Models
         public int Code { get; set; }
         public string Message { get; set; }
         public JObject Data { get; set; }
+        public string Code_message { get; set; }
+        public string Code_message_value { get; set; }
     }
 
     public class GHNRegisterShopRequest
@@ -152,6 +154,15 @@ namespace HousewareWebAPI.Helpers.Models
             Quantity = (int)orderDetail.Quantity;
             Price = (int)orderDetail.Product.Price;
             Weight = (int)orderDetail.Product.Weight;
+        }
+    }
+
+    public class GHNOrderInfoRequest
+    {
+        public string Client_order_code { get; set; }
+        public GHNOrderInfoRequest(Guid orderId)
+        {
+            Client_order_code = orderId.ToString().ToLower();
         }
     }
 }

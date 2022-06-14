@@ -11,9 +11,13 @@
         public string OAuthRedirectURI { get; set; }
         public bool UsingJWT { get; set; }
         public string Secret { get; set; }
+        // GHN
         public int GHNClientId { get; set; }
         public int GHNShopId { get; set; }
         public string GHNToken { get; set; }
+        public string GHNURLGetInfo { get; set; }
+
+
         public string VNP_TmnCode { get; set; }
         public string VNP_HashSecret { get; set; }
         public string VNP_Url { get; set; }

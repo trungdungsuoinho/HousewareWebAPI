@@ -16,6 +16,7 @@ namespace HousewareWebAPI.Helpers.Services
         public JObject CreateOrder(GHNCreateOrderRequest model, int shopId);
         public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId);
         public JObject GetOrder(string orderId);
+        public GHNResponse OrderInfo(GHNOrderInfoRequest model);
     }
 
     public class GHNService : IGHNService
@@ -25,6 +26,34 @@ namespace HousewareWebAPI.Helpers.Services
         public GHNService(IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
+        }
+
+        private GHNResponse CallAPI(string url, JObject data)
+        {
+            GHNResponse response = new();
+            var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
+            httpWebRequest.Method = "POST";
+            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            httpWebRequest.ContentType = "application/json; charset=utf-8";
+            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
+            {
+                streamWriter.Write(data);
+            }
+
+            try
+            {
+                var httpWebResponse = (HttpWebResponse)httpWebRequest.GetResponse();
+                using var streamReader = new StreamReader(httpWebResponse.GetResponseStream());
+                var resultJson = streamReader.ReadToEnd();
+                response = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
+            }
+            catch (Exception e)
+            {
+                response.Code = 999;
+                response.Message = "Exception";
+                response.Code_message = e.Message;
+            }
+            return response;
         }
 
         public JObject RegisterShop(GHNRegisterShopRequest model)
@@ -181,6 +210,11 @@ namespace HousewareWebAPI.Helpers.Services
             {
                 throw new Exception(result.Message);
             }
+        }
+
+        public GHNResponse OrderInfo(GHNOrderInfoRequest model)
+        {
+            return CallAPI(_appSettings.GHNURLGetInfo, JObject.FromObject(model));
         }
     }
 }
