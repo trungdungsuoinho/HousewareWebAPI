@@ -18,6 +18,7 @@ namespace HousewareWebAPI.Services
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
         public Response GetResutlOrderOnline(GetPreviewOrderRequest model);
+        public Response GetOrders(GetOrdersRequest model);
     }
 
     public class OrderService : IOrderService
@@ -436,6 +437,38 @@ namespace HousewareWebAPI.Services
                 }
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(orderResponse);
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+            }
+            return response;
+        }
+
+        public Response GetOrders(GetOrdersRequest model)
+        {
+            Response response = new();
+            try
+            {
+                var customer = _context.Customers.Where(o => o.CustomerId == model.CustomerId).Include(c => c.Orders).FirstOrDefault();
+                if (customer == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("Customer does not exist!");
+                    return response;
+                }
+
+                if (customer.Orders != null || customer.Orders.Count > 0)
+                {
+                    foreach (var order in customer.Orders)
+                    {
+                        //if (order.OrderStatus)
+                        //{
+
+                        //}
+                    }
+                }
             }
             catch (Exception e)
             {

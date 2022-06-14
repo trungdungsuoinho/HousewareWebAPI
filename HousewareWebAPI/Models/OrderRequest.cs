@@ -31,4 +31,9 @@ namespace HousewareWebAPI.Models
     {
         public Guid OrderId { get; set; }
     }
+
+    public class GetOrdersRequest
+    {
+        public Guid CustomerId { get; set; }
+    }
 }
