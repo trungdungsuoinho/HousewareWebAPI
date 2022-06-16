@@ -16,6 +16,7 @@
         public const string OrderPaymented = "PED";
         public const string OrderDoing = "DOI";
         public const string OrderDone = "DON";
+        public const string OrderCancel = "CAL";
 
         // GHN
         public const string GHNToNameDefault = "Khách hàng";

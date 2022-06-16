@@ -459,16 +459,26 @@ namespace HousewareWebAPI.Services
                     return response;
                 }
 
+                List<GetOrderResponse> orderResponses = new();
                 if (customer.Orders != null || customer.Orders.Count > 0)
                 {
                     foreach (var order in customer.Orders)
                     {
-                        //if (order.OrderStatus)
-                        //{
-
-                        //}
+                        _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
+                        var orderRes = new GetOrderResponse(order);
+                        if (order.OrderStatus == GlobalVariable.OrderDoing)
+                        {
+                            var orderInfo = _gHNService.OrderInfo(new GHNOrderInfoRequest(order.OrderId));
+                            if (orderInfo.Code == 200)
+                            {
+                                var status = orderInfo.Data.Value<string>("status");
+                            }
+                        }
+                        orderResponses.Add(orderRes);
                     }
                 }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(orderResponses);
             }
             catch (Exception e)
             {
