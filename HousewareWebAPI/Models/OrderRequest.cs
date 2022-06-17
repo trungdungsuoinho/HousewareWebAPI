@@ -34,6 +34,9 @@ namespace HousewareWebAPI.Models
 
     public class GetOrdersRequest
     {
+        [MyRequired]
         public Guid CustomerId { get; set; }
+        public uint Step { get; set; }
+        public string Status { get; set; }
     }
 }
