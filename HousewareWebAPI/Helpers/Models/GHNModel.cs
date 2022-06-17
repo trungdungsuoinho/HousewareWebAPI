@@ -159,10 +159,10 @@ namespace HousewareWebAPI.Helpers.Models
 
     public class GHNOrderInfoRequest
     {
-        public string Client_order_code { get; set; }
-        public GHNOrderInfoRequest(Guid orderId)
+        public string Order_code { get; set; }
+        public GHNOrderInfoRequest(string orderCode)
         {
-            Client_order_code = orderId.ToString().ToLower();
+            Order_code = orderCode;
         }
     }
 }

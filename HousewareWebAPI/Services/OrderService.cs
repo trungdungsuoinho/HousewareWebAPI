@@ -460,18 +460,35 @@ namespace HousewareWebAPI.Services
                 }
 
                 List<GetOrderResponse> orderResponses = new();
-                if (customer.Orders != null || customer.Orders.Count > 0)
+                if (customer.Orders != null && customer.Orders.Count > model.Step * GlobalVariable.StepWidth)
                 {
-                    foreach (var order in customer.Orders)
+                    for (int i = (int)(model.Step* GlobalVariable.StepWidth);
+                        i < customer.Orders.Count && i < model.Step * GlobalVariable.StepWidth + GlobalVariable.StepWidth;
+                        i++)
                     {
+                        var order = customer.Orders.ToList()[i];
                         _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
                         var orderRes = new GetOrderResponse(order);
                         if (order.OrderStatus == GlobalVariable.OrderDoing)
                         {
-                            var orderInfo = _gHNService.OrderInfo(new GHNOrderInfoRequest(order.OrderId));
+                            var orderInfo = _gHNService.OrderInfo(new GHNOrderInfoRequest(order.OrderCode));
                             if (orderInfo.Code == 200)
                             {
                                 var status = orderInfo.Data.Value<string>("status");
+                                if (status == "cancel")
+                                {
+                                    order.OrderStatus = GlobalVariable.OrderCancel;
+                                    _context.Entry(order).State = EntityState.Modified;
+                                    _context.SaveChanges();
+                                    orderRes.Status = GlobalVariable.OrderCancel;
+                                }
+                                if (status == "delivered")
+                                {
+                                    order.OrderStatus = GlobalVariable.OrderDone;
+                                    _context.Entry(order).State = EntityState.Modified;
+                                    _context.SaveChanges();
+                                    orderRes.Status = GlobalVariable.OrderDone;
+                                }
                             }
                         }
                         orderResponses.Add(orderRes);

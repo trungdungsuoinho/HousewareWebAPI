@@ -2,6 +2,9 @@
 {
     public class GlobalVariable
     {
+        // Orther
+        public const int StepWidth = 10;
+
         // Role
         public const string RoleCustomer = "RoleCustomer";
         public const string RoleAdmin = "RoleAdmin";
