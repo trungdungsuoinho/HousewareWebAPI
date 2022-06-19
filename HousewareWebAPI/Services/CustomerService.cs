@@ -1,6 +1,7 @@
 ﻿using Houseware.WebAPI.Data;
 using HousewareWebAPI.Data.Entities;
 using HousewareWebAPI.Helpers.Common;
+using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -16,25 +17,34 @@ namespace HousewareWebAPI.Services
     public interface ICustomerService
     {
         public Response Register(LoginRequest model);
-        public LoginCustomerResponse GetLoginRespone(Customer customer);
+        public LoginCustomerResponse GetLoginResponse(Customer customer);
         public Response Login(LoginRequest model);
         public bool UpdateDefaultAddress(DefaultAddressRequest model);
+        public Response GetCustomerInfo(GetCustomer model);
+        public Response UpdateCustomerInfo(UpdateCustomer model);
     }
 
     public class CustomerService : ICustomerService
     {
         private readonly HousewareContext _context;
         private readonly AppSettings _appSettings;
+        private readonly IImageService _imageService;
 
-        public CustomerService(HousewareContext context, IOptions<AppSettings> appSettings)
+        public CustomerService(HousewareContext context, IOptions<AppSettings> appSettings, IImageService imageService)
         {
             _context = context;
             _appSettings = appSettings.Value;
+            _imageService = imageService;
         }
 
         private Customer GetCusByPhone(string phone)
         {
             return _context.Customers.Where(c => c.Phone == phone).FirstOrDefault();
+        }
+
+        private Customer GetCusById(Guid id)
+        {
+            return _context.Customers.Where(c => c.CustomerId == id).FirstOrDefault();
         }
 
         public Response Register(LoginRequest model)
@@ -59,6 +69,7 @@ namespace HousewareWebAPI.Services
                 }
                 Customer customer = new()
                 {
+                    FullName = model.Phone,
                     Phone = model.Phone,
                     Password = model.Password,
                     VerifyPhone = "Y"
@@ -100,7 +111,7 @@ namespace HousewareWebAPI.Services
             return null;
         }
 
-        public LoginCustomerResponse GetLoginRespone(Customer customer)
+        public LoginCustomerResponse GetLoginResponse(Customer customer)
         {
             LoginCustomerResponse customerResponse = new()
             {
@@ -135,10 +146,11 @@ namespace HousewareWebAPI.Services
                 {
                     response.SetCode(CodeTypes.Err_Exist);
                     response.SetResult(string.Format(@"Account with this phone number [{0}] has not been verified!", model.Phone));
+                    return response;
                 }
 
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(GetLoginRespone(customerExist));
+                response.SetResult(GetLoginResponse(customerExist));
                 return response;
             }
             catch (Exception e)
@@ -160,6 +172,80 @@ namespace HousewareWebAPI.Services
             _context.Entry(customer).State = EntityState.Modified;
             _context.SaveChanges();
             return true;
+        }
+
+        public GetCustomerResponse GetCustomerResponse(Customer customer)
+        {
+            GetCustomerResponse customerResponse = new()
+            {
+                CustomerId = customer.CustomerId,
+                Phone = customer.Phone,
+                VerifyPhone = customer.VerifyPhone == "Y",
+                Email = customer.Email,
+                VerifyEmail = customer.VerifyEmail == "Y",
+                FullName = customer.FullName,
+                Picture = customer.Picture,
+                DateOfBirth = customer.DateOfBirth,
+                Gender = customer.Gender,
+            };
+            return customerResponse;
+        }
+
+        public Response GetCustomerInfo(GetCustomer model)
+        {
+            Response response = new();
+            try
+            {
+                var customer = GetCusById(model.CustomerId);
+                if (customer == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult(string.Format(@"No account exists with this id [{0}]!", model.CustomerId));
+                    return response;
+                }
+
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(GetCustomerResponse(customer));
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response UpdateCustomerInfo(UpdateCustomer model)
+        {
+            Response response = new();
+            try
+            {
+                var customer = GetCusById(model.CustomerId);
+                if (customer == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult(string.Format(@"No account exists with this id [{0}]!", model.CustomerId));
+                    return response;
+                }
+
+                customer.FullName = model.FullName;
+                customer.Picture = _imageService.UploadImage(model.Picture);
+                customer.DateOfBirth = model.DateOfBirth;
+                customer.Gender = model.Gender;
+                _context.Entry(customer).State = EntityState.Modified;
+                _context.SaveChanges();
+
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(GetCustomerResponse(customer));
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
         }
     }
 }

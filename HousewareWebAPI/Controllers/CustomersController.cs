@@ -43,5 +43,23 @@ namespace HousewareWebAPI.Controllers
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpPost("get")]
+        public IActionResult GetCustomerInfo([FromBody] GetCustomer model)
+        {
+            var response = _customerService.GetCustomerInfo(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpPost("update")]
+        public IActionResult UpdateCustomerInfo([FromBody] UpdateCustomer model)
+        {
+            var response = _customerService.UpdateCustomerInfo(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
     }
 }

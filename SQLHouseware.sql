@@ -183,4 +183,11 @@ SELECT s.ShopId, a.AddressId
 FROM Stores s, Addresses a
 WHERE a.CustomerId = '9AFFBCD5-2E26-42D6-7EA6-08DA3BB497FA'
 
-SELECT * FROM Orders WHERE OrderId = 'bdd793c3-b7b8-4584-473d-08da4842752d';
+SELECT * FROM Orders WHERE CustomerId = '2a0a27c3-2290-4806-7203-08da3b719d82' AND OrderStatus = 'PAIN';
+
+SELECT TOP 10 * FROM Orders ORDER BY OrderDate
+SELECT OrderStatus, COUNT(*) FROM Orders GROUP BY OrderStatus
+
+UPDATE Orders SET OrderStatus = 'CANL' WHERE OrderStatus = 'CAL'
+
+SELECT * FROM Customers

@@ -176,7 +176,7 @@ namespace HousewareWebAPI.Helpers.Services
             }
 
             response.SetCode(CodeTypes.Success);
-            response.SetResult(_customerService.GetLoginRespone(customerExist));
+            response.SetResult(_customerService.GetLoginResponse(customerExist));
             return response;
         }
     }

@@ -18,4 +18,19 @@ namespace HousewareWebAPI.Models
         public Guid CustomerId { get; set; }
         public Guid? AddressId { get; set; }
     }
+
+    public class GetCustomer
+    {
+        [MyRequired]
+        public Guid CustomerId { get; set; }
+    }
+
+    public class UpdateCustomer
+    {
+        public Guid CustomerId { get; set; }
+        public string FullName { get; set; }
+        public ImageInput Picture { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public bool? Gender { get; set; }
+    }
 }
