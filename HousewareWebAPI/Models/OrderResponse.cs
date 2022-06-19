@@ -19,10 +19,19 @@ namespace HousewareWebAPI.Models
         public DateTime ExpectedDeliveryTime { get; set; }
     }
 
+    public class GetOrderPagingResponse
+    {
+        public List<GetOrderResponse> Orders { get; set; } = new();
+        public uint Page { get; set; }
+        public uint TotalPage { get; set; }
+        public uint Size { get; set; }
+    }
+
     public class GetOrderResponse
     {
         public Guid OrderId { get; set; }
         public string OrderCode { get; set; }
+        public DateTime OrderDate { get; set; }
         public List<ProInCartResponse> Products { get; set; } = new();
         public uint TotalPrice { get; set; }
         public uint TotalFee { get; set; }
@@ -32,6 +41,7 @@ namespace HousewareWebAPI.Models
         {
             OrderId = order.OrderId;
             OrderCode = order.OrderCode;
+            OrderDate = order.OrderDate;
             foreach (var orderDetail in order.OrderDetails)
             {
                 Products.Add(new ProInCartResponse

@@ -451,7 +451,7 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var customer = _context.Customers.Where(o => o.CustomerId == model.CustomerId).Include(c => c.Orders).FirstOrDefault();
+                var customer = _context.Customers.Where(o => o.CustomerId == model.CustomerId).FirstOrDefault();
                 if (customer == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
@@ -459,16 +459,47 @@ namespace HousewareWebAPI.Services
                     return response;
                 }
 
-                List<GetOrderResponse> orderResponses = new();
-                if (customer.Orders != null && customer.Orders.Count > model.Step * GlobalVariable.StepWidth)
+                List<Order> orders = new ();
+                switch (model.Status)
                 {
-                    for (int i = (int)(model.Step* GlobalVariable.StepWidth);
-                        i < customer.Orders.Count && i < model.Step * GlobalVariable.StepWidth + GlobalVariable.StepWidth;
-                        i++)
+                    case GlobalVariable.OrderPaymenting:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderPaymenting).ToList();
+                        break;
+                    case GlobalVariable.OrderProcessing:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && (o.OrderStatus == GlobalVariable.OrderOrdered || o.OrderStatus == GlobalVariable.OrderPaymented)).ToList();
+                        break;
+                    case GlobalVariable.OrderDoing:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderDoing).ToList();
+                        break;
+                    case GlobalVariable.OrderDone:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderDone).ToList();
+                        break;
+                    case GlobalVariable.OrderCancel:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderCancel).ToList();
+                        break;
+                    case null:
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId).ToList();
+                        break;
+                }
+
+                GetOrderPagingResponse orderPagingResponse = new()
+                {
+                    Page = model.Page,
+                    Size = model.Size,
+                    TotalPage = (uint)Math.Ceiling((decimal)orders.Count / model.Size)
+                };
+
+                orders = orders.OrderBy(o => o.OrderDate)
+                    .Skip((int)(model.Size * model.Page))
+                    .Take((int)model.Size)
+                    .ToList();
+
+                if (orders != null && orders.Count > 0)
+                {
+                    foreach (var order in orders)
                     {
-                        var order = customer.Orders.ToList()[i];
                         _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
-                        var orderRes = new GetOrderResponse(order);
+
                         if (order.OrderStatus == GlobalVariable.OrderDoing)
                         {
                             var orderInfo = _gHNService.OrderInfo(new GHNOrderInfoRequest(order.OrderCode));
@@ -480,22 +511,25 @@ namespace HousewareWebAPI.Services
                                     order.OrderStatus = GlobalVariable.OrderCancel;
                                     _context.Entry(order).State = EntityState.Modified;
                                     _context.SaveChanges();
-                                    orderRes.Status = GlobalVariable.OrderCancel;
                                 }
-                                if (status == "delivered")
+                                else if (status == "delivered")
                                 {
                                     order.OrderStatus = GlobalVariable.OrderDone;
                                     _context.Entry(order).State = EntityState.Modified;
                                     _context.SaveChanges();
-                                    orderRes.Status = GlobalVariable.OrderDone;
                                 }
                             }
                         }
-                        orderResponses.Add(orderRes);
+                        var orderRes = new GetOrderResponse(order);
+                        if (orderRes.Status == GlobalVariable.OrderOrdered || orderRes.Status == GlobalVariable.OrderPaymented)
+                        {
+                            orderRes.Status = GlobalVariable.OrderProcessing;
+                        }
+                        orderPagingResponse.Orders.Add(orderRes);
                     }
                 }
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(orderResponses);
+                response.SetResult(orderPagingResponse);
             }
             catch (Exception e)
             {

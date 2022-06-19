@@ -8,7 +8,7 @@ namespace HousewareWebAPI.Data.Entities
     {
         public Guid OrderId { get; set; }
         public string OrderCode { get; set; }
-        public DateTime? OrderDate { get; set; }
+        public DateTime OrderDate { get; set; }
         public string OrderStatus { get; set; }
         public string PaymentType { get; set; }
         public uint Amount { get; set; }

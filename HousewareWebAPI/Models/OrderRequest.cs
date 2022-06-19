@@ -36,7 +36,9 @@ namespace HousewareWebAPI.Models
     {
         [MyRequired]
         public Guid CustomerId { get; set; }
-        public uint Step { get; set; }
         public string Status { get; set; }
+        public uint Page { get; set; } = 0;
+        [MyRange(1, int.MaxValue)]
+        public uint Size { get; set; } = 10;
     }
 }

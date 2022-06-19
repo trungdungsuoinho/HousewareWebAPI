@@ -14,12 +14,13 @@
         public const string PayCod = "COD";
 
         // Payment Status
-        public const string OrderCreate = "CRE";
-        public const string OrderPaymenting = "PIN";
-        public const string OrderPaymented = "PED";
-        public const string OrderDoing = "DOI";
-        public const string OrderDone = "DON";
-        public const string OrderCancel = "CAL";
+        public const string OrderOrdered = "ODED";
+        public const string OrderPaymenting = "PAIN";
+        public const string OrderPaymented = "PAED";
+        public const string OrderProcessing = "PRSS";
+        public const string OrderDoing = "DOIN";
+        public const string OrderDone = "DONE";
+        public const string OrderCancel = "CANL";
 
         // GHN
         public const string GHNToNameDefault = "Khách hàng";
