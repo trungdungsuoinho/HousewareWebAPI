@@ -459,8 +459,8 @@ namespace HousewareWebAPI.Services
                     return response;
                 }
 
-                List<Order> orders = new ();
-                switch (model.Status)
+                List<Order> orders = new();
+                switch (model.Status != null ? model.Status.ToUpper() : model.Status)
                 {
                     case GlobalVariable.OrderPaymenting:
                         orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderPaymenting).ToList();

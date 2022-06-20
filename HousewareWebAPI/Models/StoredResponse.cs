@@ -1,37 +1,47 @@
-﻿namespace HousewareWebAPI.Models
-{
-    public class GetStoredResponse
-    {
-        public int StoreId { get; set; }
-        public string StoreName { get; set; }
-        public string ProductId { get; set; }
-        public string ProductName { get; set;}
-        public uint Quantity { get; set; }
-    }
+﻿using HousewareWebAPI.Data.Entities;
+using System.Collections.Generic;
 
-    public class ImportStoredResponse : GetStoredResponse
+namespace HousewareWebAPI.Models
+{
+    public class ProGetStoredResponse
     {
-        public uint ImportQuantity { get; set; }
-        public ImportStoredResponse(GetStoredResponse stored)
+        public string ProductId { get; set; }
+        public string Name { get; set; }
+        public uint Quantity { get; set; }
+        public ProGetStoredResponse(Stored stored)
         {
-            StoreId = stored.StoreId;
-            StoreName = stored.StoreName;
             ProductId = stored.ProductId;
-            ProductName = stored.ProductName;
+            Name = stored.Product?.Name;
             Quantity = stored.Quantity;
         }
     }
 
-    public class ExportStoredResponse : GetStoredResponse
+    public class ProChangeStoredReponse : ProGetStoredResponse
     {
-        public uint ExportQuantity { get; set; }
-        public ExportStoredResponse(GetStoredResponse stored)
+        public ProChangeStoredReponse(Stored store, uint importQuantity) : base(store)
         {
-            StoreId = stored.StoreId;
-            StoreName = stored.StoreName;
-            ProductId = stored.ProductId;
-            ProductName = stored.ProductName;
-            Quantity = stored.Quantity;
+            ChangeQuantity = importQuantity;
+        }
+
+        public uint ChangeQuantity { get; set; }
+    }
+
+    public class GetStoredResponse
+    {
+        public int StoreId { get; set; }
+        public string Name { get; set; }
+        public List<ProChangeStoredReponse> Products { get; set; } = new();
+        public GetStoredResponse(Store store)
+        {
+            StoreId = store.StoreId;
+            Name = store.Name;
+            if (store.Storeds != null && store.Storeds.Count > 0)
+            {
+                foreach (var stored in store.Storeds)
+                {
+                    Products.Add(new ProChangeStoredReponse(stored));
+                }
+            }
         }
     }
 }
