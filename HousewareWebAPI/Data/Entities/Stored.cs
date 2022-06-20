@@ -9,6 +9,7 @@ namespace HousewareWebAPI.Data.Entities
         public uint Quantity { get; set; }
 
         // Navigation
+        [JsonIgnore]
         public Store Store { get; set; }
         public Product Product { get; set; }
     }

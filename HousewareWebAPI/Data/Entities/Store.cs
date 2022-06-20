@@ -26,7 +26,6 @@ namespace HousewareWebAPI.Data.Entities
         public string Detail { get; set; }
 
         // Navigation
-        [JsonIgnore]
         public ICollection<Stored> Storeds { get; set; }
         [JsonIgnore]
         public ICollection<Order> Orders { get; set; }

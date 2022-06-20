@@ -23,23 +23,33 @@ namespace HousewareWebAPI.Services
             _context = context;
         }
 
+        private Store LoadStoreds(StoredRequest stored)
+        {
+            var store = _context.Stores.Where(s => s.StoreId == stored.StoreId).FirstOrDefault();
+            if (store != null)
+            {
+                if (stored.Products == null && stored.Products.Count > 0)
+                {
+                    foreach (var product in stored.Products)
+                    {
+                        _context.Entry(store).Reference(s => s.Storeds.Where(sd => sd.ProductId == product.ProductId)).Load();
+                    }
+                }
+            }
+
+            return store;
+        }
+
         private Stored GetStoredById(int storeId, string productId)
         {
             return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).FirstOrDefault();
         }
 
-        private GetStoredResponse GetStoredToResponse(Stored stored)
+        private GetStoredResponse GetStoredToResponse(StoredRequest stored)
         {
-            _context.Entry(stored).Reference(s => s.Store).Load();
+            _context.Stores.Where(s => s.StoreId == stored.StoreId).FirstOrDefault();
             _context.Entry(stored).Reference(s => s.Product).Load();
-            GetStoredResponse storedResponse = new()
-            {
-                ProductId = stored.ProductId,
-                ProductName = stored.Product.Name,
-                StoreId = stored.StoreId,
-                StoreName = stored.Store.Name,
-                Quantity = stored.Quantity
-            };
+            GetStoredResponse storedResponse = new(stored.Store);
             return storedResponse;
         }
 
@@ -49,24 +59,39 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var stored = GetStoredById(model.StoreId, model.ProductId);
-                if (stored != null)
+                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
+                if (store == null)
                 {
-                    stored.Quantity += model.Quantity;
-                    _context.Entry(stored).State = EntityState.Modified;
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("There not exists a Store with such StoreId");
+                    return response;
                 }
-                else
+
+                if (model.Products == null && model.Products.Count > 0)
                 {
-                    stored = new Stored
+                    foreach (var product in model.Products)
                     {
-                        StoreId = model.StoreId,
-                        ProductId = model.ProductId,
-                        Quantity = model.Quantity
-                    };
-                    _context.Storeds.Add(stored);
+                        var stored = GetStoredById(model.StoreId, product.ProductId);
+                        if (stored != null)
+                        {
+                            stored.Quantity += product.Quantity;
+                            _context.Entry(stored).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            stored = new Stored
+                            {
+                                StoreId = model.StoreId,
+                                ProductId = product.ProductId,
+                                Quantity = product.Quantity
+                            };
+                            _context.Storeds.Add(stored);
+                        }
+                    }
+                    _context.SaveChanges();
                 }
-                _context.SaveChanges();
-                var storedResponse = new ImportStoredResponse(GetStoredToResponse(stored))
+
+                var storedResponse = new ImportStoredResponse(LoadStoreds(model))
                 {
                     ImportQuantity = model.Quantity
                 };
