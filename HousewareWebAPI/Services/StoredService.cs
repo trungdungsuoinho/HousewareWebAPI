@@ -10,8 +10,9 @@ namespace HousewareWebAPI.Services
 {
     public interface IStoredService
     {
-        public Response ImportStored(StoredRequest model);
-        public Response ExportStored(StoredRequest model);
+        public Response GetStored(StoredRequest model);
+        public Response ImportStored(ChangeStoredRequest model);
+        public Response ExportStored(ChangeStoredRequest model);
     }
 
     public class StoredService : IStoredService
@@ -23,39 +24,13 @@ namespace HousewareWebAPI.Services
             _context = context;
         }
 
-        private Store LoadStoreds(StoredRequest stored)
-        {
-            var store = _context.Stores.Where(s => s.StoreId == stored.StoreId).FirstOrDefault();
-            if (store != null)
-            {
-                if (stored.Products == null && stored.Products.Count > 0)
-                {
-                    foreach (var product in stored.Products)
-                    {
-                        _context.Entry(store).Reference(s => s.Storeds.Where(sd => sd.ProductId == product.ProductId)).Load();
-                    }
-                }
-            }
-
-            return store;
-        }
-
         private Stored GetStoredById(int storeId, string productId)
         {
-            return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).FirstOrDefault();
+            return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).Include(s => s.Product).FirstOrDefault();
         }
 
-        private GetStoredResponse GetStoredToResponse(StoredRequest stored)
+        public Response GetStored(StoredRequest model)
         {
-            _context.Stores.Where(s => s.StoreId == stored.StoreId).FirstOrDefault();
-            _context.Entry(stored).Reference(s => s.Product).Load();
-            GetStoredResponse storedResponse = new(stored.Store);
-            return storedResponse;
-        }
-
-        public Response ImportStored(StoredRequest model)
-        {
-            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
@@ -66,8 +41,49 @@ namespace HousewareWebAPI.Services
                     response.SetResult("There not exists a Store with such StoreId");
                     return response;
                 }
+                GetStoredResponse getStoredResponse = new(store);
 
-                if (model.Products == null && model.Products.Count > 0)
+                if (model.Products != null && model.Products.Count > 0)
+                {
+                    foreach (var product in model.Products)
+                    {
+                        var stored = GetStoredById(model.StoreId, product.ProductId);
+                        if (stored == null)
+                        {
+                            response.SetCode(CodeTypes.Err_NotExist);
+                            response.SetResult("This product does not stored in the store");
+                            return response;
+                        }
+                        getStoredResponse.Products.Add(new ProGetStoredResponse(stored));
+                    }
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(getStoredResponse);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response ImportStored(ChangeStoredRequest model)
+        {
+            Response response = new();
+            try
+            {
+                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
+                if (store == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("There not exists a Store with such StoreId");
+                    return response;
+                }
+                GetChangeStoredResponse getStoredResponse = new(store);
+
+                if (model.Products != null && model.Products.Count > 0)
                 {
                     foreach (var product in model.Products)
                     {
@@ -87,71 +103,92 @@ namespace HousewareWebAPI.Services
                             };
                             _context.Storeds.Add(stored);
                         }
+                        getStoredResponse.Products.Add(new ProStoredResponse(stored, product.Quantity));
                     }
-                    _context.SaveChanges();
+                    try
+                    {
+                        _context.SaveChanges();
+                    }
+                    catch (Exception e)
+                    {
+                        response.SetCode(CodeTypes.Err_AccFail);
+                        response.SetResult(e.Message);
+                        return response;
+                    }
                 }
-
-                var storedResponse = new ImportStoredResponse(LoadStoreds(model))
-                {
-                    ImportQuantity = model.Quantity
-                };
-                transaction.Commit();
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(storedResponse);
+                response.SetResult(getStoredResponse);
                 return response;
             }
             catch (Exception e)
             {
-                transaction.Rollback();
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
                 return response;
             }
         }
 
-        public Response ExportStored(StoredRequest model)
+        public Response ExportStored(ChangeStoredRequest model)
         {
-            using var transaction = _context.Database.BeginTransaction();
             Response response = new();
             try
             {
-                var stored = GetStoredById(model.StoreId, model.ProductId);
-                if (stored == null)
+                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
+                if (store == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("This product does not stored in the store");
+                    response.SetResult("There not exists a Store with such StoreId");
                     return response;
                 }
+                GetChangeStoredResponse getStoredResponse = new(store);
 
-                if (model.Quantity > stored.Quantity)
+                if (model.Products != null && model.Products.Count > 0)
                 {
-                    response.SetCode(CodeTypes.Err_IncorrectVal);
-                    response.SetResult("The quantity of products exported shipped exceeds the quantity of products stored in the store");
-                    return response;
-                }
+                    foreach (var product in model.Products)
+                    {
+                        var stored = GetStoredById(model.StoreId, product.ProductId);
+                        if (stored == null)
+                        {
+                            response.SetCode(CodeTypes.Err_NotExist);
+                            response.SetResult("This product does not stored in the store");
+                            return response;
+                        }
 
-                stored.Quantity -= model.Quantity;
-                var storedResponse = new ExportStoredResponse(GetStoredToResponse(stored))
-                {
-                    ExportQuantity = model.Quantity
-                };
-                if (stored.Quantity != 0)
-                {
-                    _context.Entry(stored).State = EntityState.Modified;
+                        if (product.Quantity > stored.Quantity)
+                        {
+                            response.SetCode(CodeTypes.Err_IncorrectVal);
+                            response.SetResult("The quantity of products exported shipped exceeds the quantity of products stored in the store");
+                            return response;
+                        }
+
+                        stored.Quantity -= product.Quantity;
+                        if (stored.Quantity != 0)
+                        {
+                            _context.Entry(stored).State = EntityState.Modified;
+                        }
+                        else
+                        {
+                            _context.Entry(stored).State = EntityState.Deleted;
+                        }
+                        getStoredResponse.Products.Add(new ProStoredResponse(stored, product.Quantity));
+                    }
+                    try
+                    {
+                        _context.SaveChanges();
+                    }
+                    catch (Exception e)
+                    {
+                        response.SetCode(CodeTypes.Err_AccFail);
+                        response.SetResult(e.Message);
+                        return response;
+                    }
                 }
-                else
-                {
-                    _context.Entry(stored).State = EntityState.Deleted;
-                }
-                _context.SaveChanges();
-                transaction.Commit();
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(storedResponse);
+                response.SetResult(getStoredResponse);
                 return response;
             }
             catch (Exception e)
             {
-                transaction.Rollback();
                 response.SetCode(CodeTypes.Err_Exception);
                 response.SetResult(e.Message);
                 return response;

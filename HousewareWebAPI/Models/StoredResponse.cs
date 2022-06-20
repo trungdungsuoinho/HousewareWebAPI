@@ -16,9 +16,21 @@ namespace HousewareWebAPI.Models
         }
     }
 
-    public class ProChangeStoredReponse : ProGetStoredResponse
+    public class GetStoredResponse
     {
-        public ProChangeStoredReponse(Stored store, uint importQuantity) : base(store)
+        public int StoreId { get; set; }
+        public string Name { get; set; }
+        public List<ProGetStoredResponse> Products { get; set; } = new();
+        public GetStoredResponse(Store store)
+        {
+            StoreId = store.StoreId;
+            Name = store.Name;
+        }
+    }
+
+    public class ProStoredResponse : ProGetStoredResponse
+    {
+        public ProStoredResponse(Stored store, uint importQuantity) : base(store)
         {
             ChangeQuantity = importQuantity;
         }
@@ -26,22 +38,15 @@ namespace HousewareWebAPI.Models
         public uint ChangeQuantity { get; set; }
     }
 
-    public class GetStoredResponse
+    public class GetChangeStoredResponse
     {
         public int StoreId { get; set; }
         public string Name { get; set; }
-        public List<ProChangeStoredReponse> Products { get; set; } = new();
-        public GetStoredResponse(Store store)
+        public List<ProStoredResponse> Products { get; set; } = new();
+        public GetChangeStoredResponse(Store store)
         {
             StoreId = store.StoreId;
             Name = store.Name;
-            if (store.Storeds != null && store.Storeds.Count > 0)
-            {
-                foreach (var stored in store.Storeds)
-                {
-                    Products.Add(new ProChangeStoredReponse(stored));
-                }
-            }
         }
     }
 }

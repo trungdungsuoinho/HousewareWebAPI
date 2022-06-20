@@ -190,4 +190,4 @@ SELECT OrderStatus, COUNT(*) FROM Orders GROUP BY OrderStatus
 
 UPDATE Orders SET OrderStatus = 'CANL' WHERE OrderStatus = 'CAL'
 
-SELECT * FROM Customers
+SELECT * FROM Products WHERE CategoryId = 'BONOIANOD' ORDER BY Sort;
