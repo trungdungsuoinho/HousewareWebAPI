@@ -4,6 +4,7 @@ using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HousewareWebAPI.Services
@@ -13,6 +14,7 @@ namespace HousewareWebAPI.Services
         public Response GetStored(StoredRequest model);
         public Response ImportStored(ChangeStoredRequest model);
         public Response ExportStored(ChangeStoredRequest model);
+        public bool CheckEnough(Store store, List<Cart> carts);
     }
 
     public class StoredService : IStoredService
@@ -26,7 +28,7 @@ namespace HousewareWebAPI.Services
 
         private Stored GetStoredById(int storeId, string productId)
         {
-            return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).Include(s => s.Product).FirstOrDefault();
+            return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).FirstOrDefault();
         }
 
         public Response GetStored(StoredRequest model)
@@ -85,32 +87,36 @@ namespace HousewareWebAPI.Services
 
                 if (model.Products != null && model.Products.Count > 0)
                 {
-                    foreach (var product in model.Products)
-                    {
-                        var stored = GetStoredById(model.StoreId, product.ProductId);
-                        if (stored != null)
-                        {
-                            stored.Quantity += product.Quantity;
-                            _context.Entry(stored).State = EntityState.Modified;
-                        }
-                        else
-                        {
-                            stored = new Stored
-                            {
-                                StoreId = model.StoreId,
-                                ProductId = product.ProductId,
-                                Quantity = product.Quantity
-                            };
-                            _context.Storeds.Add(stored);
-                        }
-                        getStoredResponse.Products.Add(new ProStoredResponse(stored, product.Quantity));
-                    }
+                    using var transaction = _context.Database.BeginTransaction();
                     try
                     {
-                        _context.SaveChanges();
+                        foreach (var product in model.Products)
+                        {
+                            var stored = GetStoredById(model.StoreId, product.ProductId);
+                            if (stored != null)
+                            {
+                                stored.Quantity += product.Quantity;
+                                _context.Entry(stored).State = EntityState.Modified;
+                            }
+                            else
+                            {
+                                stored = new Stored
+                                {
+                                    StoreId = model.StoreId,
+                                    ProductId = product.ProductId,
+                                    Quantity = product.Quantity
+                                };
+                                _context.Storeds.Add(stored);
+                            }
+                            _context.SaveChanges();
+                            _context.Entry(stored).Reference(s => s.Product).Load();
+                            getStoredResponse.Products.Add(new ProStoredResponse(stored, product.Quantity));
+                        }
+                        transaction.Commit();
                     }
                     catch (Exception e)
                     {
+                        transaction.Rollback();
                         response.SetCode(CodeTypes.Err_AccFail);
                         response.SetResult(e.Message);
                         return response;
@@ -170,6 +176,7 @@ namespace HousewareWebAPI.Services
                         {
                             _context.Entry(stored).State = EntityState.Deleted;
                         }
+                        _context.Entry(stored).Reference(s => s.Product).Load();
                         getStoredResponse.Products.Add(new ProStoredResponse(stored, product.Quantity));
                     }
                     try
@@ -195,31 +202,17 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response GetAvailableStoreds(GetCartsRequest model)
+        public bool CheckEnough(Store store, List<Cart> carts)
         {
-            Response response = new();
-            try
+            _context.Entry(store).Collection(s => s.Storeds).Load();
+            foreach (var cart in carts)
             {
-                var carts = _context.Carts.Where(c => c.CustomerId == model.CustomerId).ToList();
-                var storeds = from a in carts
-                              join s in _context.Storeds.ToList()
-                              on a.ProductId equals s.ProductId
-                              where a.Quantity <= s.Quantity
-                              select s;
-                foreach (var stored in storeds)
+                if (store.Storeds.Where(s => s.ProductId == cart.ProductId && s.Quantity >= cart.Quantity).FirstOrDefault() == null)
                 {
-
+                    return false;
                 }
-                response.SetCode(CodeTypes.Success);
-                response.SetResult(storeds);
-                return response;
             }
-            catch (Exception e)
-            {
-                response.SetCode(CodeTypes.Err_Exception);
-                response.SetResult(e.Message);
-                return response;
-            }
+            return true;
         }
     }
 }

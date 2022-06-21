@@ -25,11 +25,13 @@ namespace HousewareWebAPI.Services
     {
         private readonly HousewareContext _context;
         private readonly IGHNService _gHNService;
+        private readonly IStoredService _storedService;
 
-        public StoreService(HousewareContext context, IGHNService gHNService)
+        public StoreService(HousewareContext context, IGHNService gHNService, IStoredService storedService)
         {
             _context = context;
             _gHNService = gHNService;
+            _storedService = storedService;
         }
 
         private Store GetById(int id)
@@ -165,7 +167,8 @@ namespace HousewareWebAPI.Services
                 calculateFeeRequest.To_ward_code = address.WardId;
                 calculateFeeRequest.To_district_id = address.DistrictId;
 
-                var calculateFees = _context.Stores.Select(s => new GetCalculateFee
+                var stores = _context.Stores.ToList();
+                var calculateFees = stores.Where(s => _storedService.CheckEnough(s, carts)).Select(s => new GetCalculateFee
                 {
                     Store = new StoreResponse(s)
                 }).ToList();
