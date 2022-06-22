@@ -11,10 +11,12 @@ namespace HousewareWebAPI.Services
 {
     public interface IStoredService
     {
+        public Response GetFullStored(GetStoredRequest model);
         public Response GetStored(StoredRequest model);
         public Response ImportStored(ChangeStoredRequest model);
         public Response ExportStored(ChangeStoredRequest model);
         public bool CheckEnough(Store store, List<Cart> carts);
+        public bool DecreaseStored(Store store, List<OrderDetail> orderDetails);
     }
 
     public class StoredService : IStoredService
@@ -29,6 +31,46 @@ namespace HousewareWebAPI.Services
         private Stored GetStoredById(int storeId, string productId)
         {
             return _context.Storeds.Where(c => c.StoreId == storeId && c.ProductId == productId).FirstOrDefault();
+        }
+
+        public Response GetFullStored(GetStoredRequest model)
+        {
+            Response response = new();
+            try
+            {
+                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
+                if (store == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("There not exists a Store with such StoreId");
+                    return response;
+                }
+                GetStoredResponse getStoredResponse = new(store);
+
+                var storeds = _context.Storeds.Where(s => s.StoreId == model.StoreId).Include(s => s.Product).ToList();
+                if (storeds != null && storeds.Count > 0)
+                {
+                    foreach (var stored in storeds)
+                    {
+                        if (stored.Product == null)
+                        {
+                            response.SetCode(CodeTypes.Err_NotExist);
+                            response.SetResult("This product does not stored in the store");
+                            return response;
+                        }
+                        getStoredResponse.Products.Add(new ProGetStoredResponse(stored));
+                    }
+                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(getStoredResponse);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
         }
 
         public Response GetStored(StoredRequest model)
@@ -214,5 +256,24 @@ namespace HousewareWebAPI.Services
             }
             return true;
         }
+
+        public bool DecreaseStored(Store store, List<OrderDetail> orderDetails)
+        {
+            _context.Entry(store).Collection(s => s.Storeds).Load();
+            foreach (var orderDetail in orderDetails)
+            {
+                var stored = store.Storeds.Where(s => s.ProductId == orderDetail.ProductId && s.Quantity >= orderDetail.Quantity).FirstOrDefault();
+                if (stored == null)
+                {
+                    return false;
+                }
+                stored.Quantity -= orderDetail.Quantity;
+                _context.Entry(stored).State = EntityState.Modified;
+            }
+            _context.SaveChanges();
+            return true;
+        }
+
+        //public bool IncreaseStored(Store store, List<Cart> carts)
     }
 }
