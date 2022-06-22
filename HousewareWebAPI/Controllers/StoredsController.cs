@@ -17,7 +17,16 @@ namespace HousewareWebAPI.Controllers
         }
 
         [HttpPost("get")]
-        public IActionResult GetStored([FromBody] StoredRequest model)
+        public IActionResult GetStored([FromBody] GetStoredRequest model)
+        {
+            var response = _storedService.GetFullStored(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpPost("getany")]
+        public IActionResult GetAnyStored([FromBody] StoredRequest model)
         {
             var response = _storedService.GetStored(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);

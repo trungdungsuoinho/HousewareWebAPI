@@ -26,12 +26,14 @@ namespace HousewareWebAPI.Services
         private readonly HousewareContext _context;
         private readonly IGHNService _gHNService;
         private readonly IVNPayService _vNPayService;
+        private readonly IStoredService _storedService;
 
-        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService)
+        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService, IStoredService storedService)
         {
             _context = context;
             _gHNService = gHNService;
             _vNPayService = vNPayService;
+            _storedService = storedService;
         }
 
         private List<OrderDetail> GetOrderDetails(Guid orderId)
@@ -122,7 +124,13 @@ namespace HousewareWebAPI.Services
                     order.OrderStatus = GlobalVariable.OrderDoing;
                     order.Amount = (uint)(createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee"));
                     _context.Entry(order).State = EntityState.Modified;
-                    _context.SaveChanges();                    
+                    _context.SaveChanges();
+
+                    _context.Entry(order).Collection(o => o.OrderDetails).Load();
+                    if (!_storedService.DecreaseStored(store, order.OrderDetails.ToList()))
+                    {
+                        throw new Exception("Can't decrease stored");
+                    }
 
                     // Create response
                     CreateOrderResponse orderResponse = new()
@@ -333,6 +341,8 @@ namespace HousewareWebAPI.Services
                             order.OrderCode = jObjCreateOrder.Value<string>("order_code");
                             order.OrderStatus = GlobalVariable.OrderDoing;
                             _context.Entry(order).State = EntityState.Modified;
+                            _context.Entry(order).Collection(o => o.OrderDetails).Load();
+                            _storedService.DecreaseStored(store, order.OrderDetails.ToList());
                             _context.SaveChanges();
                         }
                         response.RspCode = "00";

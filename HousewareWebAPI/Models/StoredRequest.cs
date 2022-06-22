@@ -3,6 +3,12 @@ using System.Collections.Generic;
 
 namespace HousewareWebAPI.Models
 {
+    public class GetStoredRequest
+    {
+        [MyRequired]
+        public int StoreId { get; set; }
+    }
+
     public class ProStoredRequest
     {
         [MyRequired]
