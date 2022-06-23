@@ -15,10 +15,12 @@ namespace HousewareWebAPI.Controllers
     public class TestController : ControllerBase
     {
         private readonly IVNPayService _vNPayService;
+        private readonly ITwilioService _twilioService;
 
-        public TestController(IVNPayService vNPayService)
+        public TestController(IVNPayService vNPayService, ITwilioService twilioService)
         {
             _vNPayService = vNPayService;
+            _twilioService = twilioService;
         }
 
         [HttpGet("payment")]
@@ -26,6 +28,28 @@ namespace HousewareWebAPI.Controllers
         {
             Response response = new();
             response.SetResult(_vNPayService.GeneratePaymentURL("https://www.facebook.com/", Guid.NewGuid(), 199000));
+            response.SetCode(CodeTypes.Success);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpGet("sendsms")]
+        public IActionResult SendSMS()
+        {
+            Response response = new();
+            response.SetResult(_twilioService.SendSMS("+84334071056", "Hello Trung Dũng"));
+            response.SetCode(CodeTypes.Success);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpGet("verify")]
+        public IActionResult Verify()
+        {
+            Response response = new();
+            response.SetResult(_twilioService.VerifyPhone("+84334071056", "Hello Trung Dũng"));
             response.SetCode(CodeTypes.Success);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);

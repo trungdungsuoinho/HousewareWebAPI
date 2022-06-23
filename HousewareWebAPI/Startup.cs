@@ -72,6 +72,7 @@ namespace HousewareWebAPI
             services.AddScoped<IGHNService, GHNService>();
             services.AddScoped<IOrderService, OrderService>();
             services.AddScoped<IVNPayService, VNPayService>();
+            services.AddScoped<ITwilioService, TwilioService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

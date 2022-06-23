@@ -16,10 +16,14 @@
         public int GHNShopId { get; set; }
         public string GHNToken { get; set; }
         public string GHNURLGetInfo { get; set; }
-
-
+        // VNP
         public string VNP_TmnCode { get; set; }
         public string VNP_HashSecret { get; set; }
         public string VNP_Url { get; set; }
+        // Twilio
+        public string TwilioAccountSID { get; set; }
+        public string TwilioAuthToken { get; set; }
+        public string TwilioPhoneNumber { get; set; }
+        public string TwilioServiceSID { get; set; }
     }
 }
