@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using PhoneNumbers;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace HousewareWebAPI.Helpers.Common
@@ -19,6 +20,12 @@ namespace HousewareWebAPI.Helpers.Common
                 }
             }
             return hash.ToString();
+        }
+
+        public static string ParseInternationalPhoneNumber(string phoneToParce, string region = "VN")
+        {
+            PhoneNumber phoneNumber = PhoneNumberUtil.GetInstance().Parse(phoneToParce, "VN");
+            return PhoneNumberUtil.GetInstance().Format(phoneNumber, PhoneNumberFormat.INTERNATIONAL);
         }
     }
 }

@@ -16,11 +16,6 @@ namespace HousewareWebAPI.Controllers
             _customerService = customerService;
         }
 
-        /// <summary>
-        /// Rigester a account for Customer. API for client
-        /// </summary>
-        /// <param name="model"></param>
-        /// <returns></returns>
         [HttpPost("register")]
         public IActionResult Register([FromBody] LoginRequest model)
         {

@@ -52,30 +52,34 @@ namespace HousewareWebAPI.Services
             Response response = new();
             try
             {
-                var customerExist = GetCusByPhone(model.Phone);
-                if (customerExist != null)
+                var customer = GetCusByPhone(model.Phone);
+                if (customer != null)
                 {
-                    if (customerExist.VerifyPhone == "Y")
+                    if (customer.VerifyPhone == "Y")
                     {
                         response.SetCode(CodeTypes.Err_Exist);
                         response.SetResult(string.Format(@"Already have an account with this phone number [{0}]!", model.Phone));
+                        return response;
                     }
                     else
                     {
+                        //Create verify
                         response.SetCode(CodeTypes.Err_Exist);
                         response.SetResult(string.Format(@"Already have an account with this phone number [{0}] but not yet verified!", model.Phone));
                     }
-                    return response;
                 }
-                Customer customer = new()
+                else
                 {
-                    FullName = model.Phone,
-                    Phone = model.Phone,
-                    Password = model.Password,
-                    VerifyPhone = "Y"
-                };
-                _context.Customers.Add(customer);
-                _context.SaveChanges();
+                    customer = new()
+                    {
+                        FullName = model.Phone,
+                        Phone = model.Phone,
+                        Password = model.Password,
+                    };
+                    _context.Customers.Add(customer);
+                    _context.SaveChanges();
+                }
+
 
                 response.SetCode(CodeTypes.Success);
                 return response;

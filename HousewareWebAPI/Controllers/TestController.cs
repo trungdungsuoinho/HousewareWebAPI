@@ -1,12 +1,8 @@
 ﻿using HousewareWebAPI.Helpers.Common;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace HousewareWebAPI.Controllers
 {
@@ -49,7 +45,7 @@ namespace HousewareWebAPI.Controllers
         public IActionResult Verify()
         {
             Response response = new();
-            response.SetResult(_twilioService.VerifyPhone("+84334071056", "Hello Trung Dũng"));
+            response.SetResult(_twilioService.SendVerification("0334071056"));
             response.SetCode(CodeTypes.Success);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);

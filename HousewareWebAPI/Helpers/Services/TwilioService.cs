@@ -1,10 +1,5 @@
 ﻿using HousewareWebAPI.Helpers.Common;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
 using Twilio.Rest.Verify.V2.Service;
@@ -13,8 +8,9 @@ namespace HousewareWebAPI.Helpers.Services
 {
     public interface ITwilioService
     {
+        public VerificationResource SendVerification(string phone);
+        public VerificationCheckResource CheckVerification(string phone, string code);
         public object SendSMS(string phone, string content);
-        public object VerifyPhone(string phone, string content);
     }
 
     public class TwilioService : ITwilioService
@@ -24,6 +20,30 @@ namespace HousewareWebAPI.Helpers.Services
         public TwilioService(IOptions<AppSettings> appSettings)
         {
             _appSettings = appSettings.Value;
+        }
+
+        public VerificationResource SendVerification(string phone)
+        {
+            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
+
+            var verification = VerificationResource.Create(
+                pathServiceSid: _appSettings.TwilioServiceSID,
+                to: Utils.ParseInternationalPhoneNumber(phone),
+                channel: "sms"
+            );
+            return verification;
+        }
+
+        public VerificationCheckResource CheckVerification(string phone, string code)
+        {
+            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
+
+            var verificationCheck = VerificationCheckResource.Create(
+                pathServiceSid: _appSettings.TwilioServiceSID,
+                to: Utils.ParseInternationalPhoneNumber(phone),
+                code: code
+            );
+            return verificationCheck;
         }
 
         public object SendSMS(string phone, string content)
@@ -38,16 +58,6 @@ namespace HousewareWebAPI.Helpers.Services
             return message;
         }
 
-        public object VerifyPhone(string phone, string content)
-        {
-            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
 
-            var verification = VerificationResource.Create(
-                to: phone,
-                channel: "sms",
-                pathServiceSid: _appSettings.TwilioServiceSID
-            );
-            return verification;
-        }
     }
 }
