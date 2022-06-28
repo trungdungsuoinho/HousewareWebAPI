@@ -17,9 +17,18 @@ namespace HousewareWebAPI.Controllers
         }
 
         [HttpPost("register")]
-        public IActionResult Register([FromBody] LoginRequest model)
+        public IActionResult Register([FromBody] RegisterRequest model)
         {
             var response = _customerService.Register(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpPost("verify")]
+        public IActionResult Verify([FromBody] VerifyRequest model)
+        {
+            var response = _customerService.Verify(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);

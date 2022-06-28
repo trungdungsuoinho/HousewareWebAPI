@@ -2,6 +2,12 @@
 
 namespace HousewareWebAPI.Models
 {
+    public class RegisterResponse
+    {
+        public Guid CustomerId { get; set; }
+        public string Phone { get; set; }
+    }
+
     public class LoginCustomerResponse
     {
         public Guid CustomerId { get; set; }

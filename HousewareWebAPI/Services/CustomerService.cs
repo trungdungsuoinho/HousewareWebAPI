@@ -16,7 +16,8 @@ namespace HousewareWebAPI.Services
 {
     public interface ICustomerService
     {
-        public Response Register(LoginRequest model);
+        public Response Register(RegisterRequest model);
+        public Response Verify(VerifyRequest model);
         public LoginCustomerResponse GetLoginResponse(Customer customer);
         public Response Login(LoginRequest model);
         public bool UpdateDefaultAddress(DefaultAddressRequest model);
@@ -29,12 +30,14 @@ namespace HousewareWebAPI.Services
         private readonly HousewareContext _context;
         private readonly AppSettings _appSettings;
         private readonly IImageService _imageService;
+        private readonly ITwilioService _twilioService;
 
-        public CustomerService(HousewareContext context, IOptions<AppSettings> appSettings, IImageService imageService)
+        public CustomerService(HousewareContext context, IOptions<AppSettings> appSettings, IImageService imageService, ITwilioService twilioService)
         {
             _context = context;
             _appSettings = appSettings.Value;
             _imageService = imageService;
+            _twilioService = twilioService;
         }
 
         private Customer GetCusByPhone(string phone)
@@ -47,41 +50,145 @@ namespace HousewareWebAPI.Services
             return _context.Customers.Where(c => c.CustomerId == id).FirstOrDefault();
         }
 
-        public Response Register(LoginRequest model)
+        public Response Register(RegisterRequest model)
         {
             Response response = new();
             try
             {
                 var customer = GetCusByPhone(model.Phone);
-                if (customer != null)
+                if (customer != null && customer.VerifyPhone == "Y")
                 {
-                    if (customer.VerifyPhone == "Y")
+                    response.SetCode(CodeTypes.Err_Exist);
+                    response.SetResult(string.Format(@"Already have an account with this phone number [{0}]!", model.Phone));
+                    return response;
+                }
+
+                if (model.Password != model.ConfirmPassword)
+                {
+                    response.SetCode(CodeTypes.Err_IncorrectVal);
+                    response.SetResult("Confirm password incorrect!");
+                    return response;
+                }
+
+                customer = new()
+                {
+                    FullName = model.Phone,
+                    Phone = model.Phone,
+                    Password = model.Password,
+                };
+                using (var transaction = _context.Database.BeginTransaction())
+                {
+                    _context.Customers.Add(customer);
+                    _context.SaveChanges();
+
+                    try
                     {
-                        response.SetCode(CodeTypes.Err_Exist);
-                        response.SetResult(string.Format(@"Already have an account with this phone number [{0}]!", model.Phone));
+                        var verification = _twilioService.SendVerification(customer.Phone);
+                        if (verification == null || verification.Status == null)
+                        {
+                            response.SetCode(CodeTypes.Err_AccFail);
+                            response.SetResult("Send phone number verification failed!");
+                            transaction.Rollback();
+                            return response;
+                        }
+
+                        if (verification.Status == "pending")
+                        {
+                            customer.VerifyPhone = "P";
+                            _context.Entry(customer).State = EntityState.Modified;
+                            _context.SaveChanges();
+                        }
+                        else
+                        {
+                            response.SetCode(CodeTypes.Err_AccFail);
+                            response.SetResult(string.Format("Send phone number verification failed with status {0}!", verification.Status));
+                            transaction.Rollback();
+                            return response;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        transaction.Rollback();
+                        throw new Exception(e.Message);
+                    }
+                    transaction.Commit();
+                }
+                var result = new RegisterResponse
+                {
+                    CustomerId = customer.CustomerId,
+                    Phone = customer.Phone
+                };
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(result);
+                return response;
+            }
+            catch (Exception e)
+            {
+                response.SetCode(CodeTypes.Err_Exception);
+                response.SetResult(e.Message);
+                return response;
+            }
+        }
+
+        public Response Verify(VerifyRequest model)
+        {
+            Response response = new();
+            try
+            {
+                var customer = GetCusByPhone(model.Phone);
+                if (customer == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult(string.Format(@"No account exists with this phone number [{0}]!", model.Phone));
+                    return response;
+                }
+
+                if (customer.VerifyPhone == "Y")
+                {
+                    response.SetCode(CodeTypes.Err_IncorrectVal);
+                    response.SetResult("This account's phone number is verified!");
+                    return response;
+                }
+
+                if (customer.VerifyPhone == "N")
+                {
+                    response.SetCode(CodeTypes.Err_IncorrectVal);
+                    response.SetResult("Haven't sent verification with this phone number!");
+                    return response;
+                }
+
+                try
+                {
+                    var verification = _twilioService.CheckVerification(customer.Phone, model.Code);
+                    if (verification == null || verification.Status == null)
+                    {
+                        response.SetCode(CodeTypes.Err_Unauthorized);
+                        response.SetResult("Check verification failed!");
                         return response;
+                    }
+
+                    if (verification.Status == "approved")
+                    {
+                        customer.VerifyPhone = "Y";
+                        _context.Entry(customer).State = EntityState.Modified;
+                        _context.SaveChanges();
                     }
                     else
                     {
-                        //Create verify
-                        response.SetCode(CodeTypes.Err_Exist);
-                        response.SetResult(string.Format(@"Already have an account with this phone number [{0}] but not yet verified!", model.Phone));
+                        response.SetCode(CodeTypes.Err_AccFail);
+                        response.SetResult(string.Format("Check verification failed with status {0}!", verification.Status));
+                        return response;
                     }
                 }
-                else
+                catch (Exception e)
                 {
-                    customer = new()
-                    {
-                        FullName = model.Phone,
-                        Phone = model.Phone,
-                        Password = model.Password,
-                    };
-                    _context.Customers.Add(customer);
-                    _context.SaveChanges();
+                    response.SetCode(CodeTypes.Err_Unauthorized);
+                    response.SetResult(e.Message);
+                    return response;
                 }
 
-
                 response.SetCode(CodeTypes.Success);
+                response.SetResult(GetLoginResponse(customer));
                 return response;
             }
             catch (Exception e)
