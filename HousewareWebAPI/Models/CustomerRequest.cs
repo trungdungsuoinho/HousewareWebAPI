@@ -3,6 +3,27 @@ using System;
 
 namespace HousewareWebAPI.Models
 {
+    public class RegisterRequest
+    {
+        [MyRequired]
+        [MyRegularExpression(@"^([0-9]{10})$")]
+        public string Phone { get; set; }
+        [MyRequired]
+        public string Password { get; set; }
+        [MyRequired]
+        public string ConfirmPassword { get; set; }
+    }
+
+    public class VerifyRequest
+    {
+        [MyRequired]
+        [MyRegularExpression(@"^([0-9]{10})$")]
+        public string Phone { get; set; }
+        [MyRequired]
+        [MyRegularExpression(@"^([0-9]{6})$")]
+        public string Code { get; set; }
+    }
+
     public class LoginRequest
     {
         [MyRequired]
@@ -11,6 +32,8 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public string Password { get; set; }
     }
+
+
 
     public class DefaultAddressRequest
     {

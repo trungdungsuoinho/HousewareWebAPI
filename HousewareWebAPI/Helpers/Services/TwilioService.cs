@@ -24,7 +24,7 @@ namespace HousewareWebAPI.Helpers.Services
 
         public VerificationResource SendVerification(string phone)
         {
-            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
+            TwilioClient.Init(_appSettings.TwilioAccountSID, Utils.Decrypt(_appSettings.TwilioAuthToken));
 
             var verification = VerificationResource.Create(
                 pathServiceSid: _appSettings.TwilioServiceSID,
@@ -36,7 +36,7 @@ namespace HousewareWebAPI.Helpers.Services
 
         public VerificationCheckResource CheckVerification(string phone, string code)
         {
-            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
+            TwilioClient.Init(_appSettings.TwilioAccountSID, Utils.Decrypt(_appSettings.TwilioAuthToken));
 
             var verificationCheck = VerificationCheckResource.Create(
                 pathServiceSid: _appSettings.TwilioServiceSID,
@@ -48,7 +48,7 @@ namespace HousewareWebAPI.Helpers.Services
 
         public object SendSMS(string phone, string content)
         {
-            TwilioClient.Init(_appSettings.TwilioAccountSID, _appSettings.TwilioAuthToken);
+            TwilioClient.Init(_appSettings.TwilioAccountSID, Utils.Decrypt(_appSettings.TwilioAuthToken));
 
             var message = MessageResource.Create(
                 body: content,
