@@ -6,7 +6,7 @@ namespace HousewareWebAPI.Data.Entities
     {
         public int StoreId { get; set; }
         public string ProductId { get; set; }
-        public uint Quantity { get; set; }
+        public int Quantity { get; set; }
 
         // Navigation
         [JsonIgnore]

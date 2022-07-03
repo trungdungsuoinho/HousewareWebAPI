@@ -9,7 +9,7 @@ namespace HousewareWebAPI.Data.Entities
         public Guid OrderId { get; set; }
         public string ProductId { get; set; }
         [MyRange(0, int.MaxValue)]
-        public uint Quantity { get; set; }
+        public int Quantity { get; set; }
 
         // Navigation
         [JsonIgnore]

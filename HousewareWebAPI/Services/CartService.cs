@@ -57,7 +57,7 @@ namespace HousewareWebAPI.Services
                 {
                     foreach (var cart in carts)
                     {
-                        cartResponse.Product.Add(new ProInCartResponse
+                        cartResponse.Product.Add(new ProductInCartResponse
                         {
                             ProductId = cart.ProductId,
                             Name = cart.Product.Name,
@@ -67,7 +67,7 @@ namespace HousewareWebAPI.Services
                             ItemPrice = cart.Product.Price * cart.Quantity
                         });
                     }
-                    cartResponse.TotalPrice = (uint)cartResponse.Product.Sum(p => p.ItemPrice);
+                    cartResponse.TotalPrice = cartResponse.Product.Sum(p => p.ItemPrice);
                 }
                 response.SetCode(CodeTypes.Success);
                 response.SetResult(cartResponse);

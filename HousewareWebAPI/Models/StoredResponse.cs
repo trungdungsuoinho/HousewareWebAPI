@@ -7,7 +7,7 @@ namespace HousewareWebAPI.Models
     {
         public string ProductId { get; set; }
         public string Name { get; set; }
-        public uint Quantity { get; set; }
+        public int Quantity { get; set; }
         public ProGetStoredResponse(Stored stored)
         {
             ProductId = stored.ProductId;
@@ -30,12 +30,12 @@ namespace HousewareWebAPI.Models
 
     public class ProStoredResponse : ProGetStoredResponse
     {
-        public ProStoredResponse(Stored store, uint importQuantity) : base(store)
+        public ProStoredResponse(Stored store, int importQuantity) : base(store)
         {
             ChangeQuantity = importQuantity;
         }
 
-        public uint ChangeQuantity { get; set; }
+        public int ChangeQuantity { get; set; }
     }
 
     public class GetChangeStoredResponse
