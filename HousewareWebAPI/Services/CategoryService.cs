@@ -62,13 +62,7 @@ namespace HousewareWebAPI.Services
                         CategoryId = category.CategoryId,
                         Name = category.Name,
                         Advantages = JsonConvert.DeserializeObject<List<Advantage>>(category.Advantage),
-                        Products = category.Products.OrderBy(c => c.Sort).Select(c => new ProInGetCat
-                        {
-                            ProductId = c.ProductId,
-                            Name = c.Name,
-                            Avatar = c.Avatar,
-                            Price = c.Price
-                        }).ToList()
+                        Products = category.Products.OrderBy(c => c.Sort).Select(c => new ProductSummaryResponse(c)).ToList()
                     };
                     response.SetCode(CodeTypes.Success);
                     response.SetResult(result);
