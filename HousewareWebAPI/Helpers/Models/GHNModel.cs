@@ -165,4 +165,11 @@ namespace HousewareWebAPI.Helpers.Models
             Order_code = orderCode;
         }
     }
+
+    public class GHNGetServiceRequest
+    {
+        public int From_district { get; set; }
+        public int To_district { get; set; }
+        public int Shop_id { get; set; }
+    }
 }

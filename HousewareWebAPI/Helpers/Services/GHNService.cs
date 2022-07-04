@@ -17,6 +17,7 @@ namespace HousewareWebAPI.Helpers.Services
         public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId);
         public JObject GetOrder(string orderId);
         public GHNResponse OrderInfo(GHNOrderInfoRequest model);
+        public GHNResponse GetService(GHNGetServiceRequest model);
     }
 
     public class GHNService : IGHNService
@@ -215,6 +216,11 @@ namespace HousewareWebAPI.Helpers.Services
         public GHNResponse OrderInfo(GHNOrderInfoRequest model)
         {
             return CallAPI(_appSettings.GHNURLGetInfo, JObject.FromObject(model));
+        }
+
+        public GHNResponse GetService(GHNGetServiceRequest model)
+        {
+            return CallAPI(_appSettings.GHNURLGetService, JObject.FromObject(model));
         }
     }
 }

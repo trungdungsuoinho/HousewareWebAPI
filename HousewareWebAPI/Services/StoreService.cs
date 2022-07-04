@@ -5,6 +5,7 @@ using HousewareWebAPI.Helpers.Models;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -167,26 +168,43 @@ namespace HousewareWebAPI.Services
                 calculateFeeRequest.To_ward_code = address.WardId;
                 calculateFeeRequest.To_district_id = address.DistrictId;
 
-                var stores = _context.Stores.ToList();
-                var calculateFees = stores.Where(s => _storedService.CheckEnough(s, carts)).Select(s => new GetCalculateFee
+                GetCalculateFee calculateFee = new();
+                ShippingService defaultService = new();
+                foreach (var store in _context.Stores.ToList())
                 {
-                    Store = new StoreResponse(s)
-                }).ToList();
-                foreach (var calculateFee in calculateFees)
-                {
-                    calculateFeeRequest.From_district_id = calculateFee.Store.DistrictId;
+                    calculateFeeRequest.From_district_id = store.DistrictId;
                     try
                     {
-                        calculateFee.Fee = _gHNService.CalculateFee(calculateFeeRequest).Value<uint>("total");
+                        var fee = _gHNService.CalculateFee(calculateFeeRequest).Value<int>("total");
+                        if (fee != 0 && fee < defaultService.Fee)
+                        {
+                            calculateFee.Store = new(store);
+                            defaultService.Fee = fee;
+                        }
                     }
                     catch
                     {
-                        calculateFees.Remove(calculateFee);
+                    }
+                }
+
+                if (calculateFee.Store != null)
+                {
+                    GHNGetServiceRequest getServiceRequest = new()
+                    {
+                        Shop_id = calculateFee.Store.StoreId,
+                        From_district = calculateFee.Store.DistrictId,
+                        To_district = address.DistrictId
+                    };
+                    var getServices = _gHNService.GetService(getServiceRequest);
+
+                    if (getServices.Data != null)
+                    {
+                        var listService = JArray.Parse(getServices.Data.);
                     }
                 }
 
                 response.SetCode(CodeTypes.Success);
-                response.SetResult(calculateFees.OrderBy(c => c.Fee));
+                response.SetResult(calculateFee);
             }
             catch (Exception e)
             {
