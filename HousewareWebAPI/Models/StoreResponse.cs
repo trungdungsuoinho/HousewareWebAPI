@@ -1,5 +1,4 @@
 ﻿using HousewareWebAPI.Data.Entities;
-using System.Collections.Generic;
 
 namespace HousewareWebAPI.Models
 {
@@ -28,16 +27,9 @@ namespace HousewareWebAPI.Models
         }
     }
 
-    public class ShippingService
-    {
-        public int ServiceId { get; set; } = 2;
-        public string ServiceName { get; set; } = "Chuẩn";
-        public int Fee { get; set; } = int.MaxValue;
-    }
-
     public class GetCalculateFee
     {
         public StoreResponse Store { get; set; }
-        public List<ShippingService> ShippingServices = new();
+        public int Fee { get; set; } = int.MaxValue;
     }
 }

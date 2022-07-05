@@ -513,7 +513,8 @@ namespace HousewareWebAPI.Services
                             var orderInfo = _gHNService.OrderInfo(new GHNOrderInfoRequest(order.OrderCode));
                             if (orderInfo.Code == 200)
                             {
-                                var status = orderInfo.Data.Value<string>("status");
+                                JObject jData = JObject.FromObject(orderInfo.Data);
+                                var status = jData.Value<string>("status");
                                 if (status == "cancel")
                                 {
                                     order.OrderStatus = GlobalVariable.OrderCancel;
