@@ -5,7 +5,6 @@ using HousewareWebAPI.Helpers.Models;
 using HousewareWebAPI.Helpers.Services;
 using HousewareWebAPI.Models;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -169,17 +168,16 @@ namespace HousewareWebAPI.Services
                 calculateFeeRequest.To_district_id = address.DistrictId;
 
                 GetCalculateFee calculateFee = new();
-                ShippingService defaultService = new();
                 foreach (var store in _context.Stores.ToList())
                 {
                     calculateFeeRequest.From_district_id = store.DistrictId;
                     try
                     {
                         var fee = _gHNService.CalculateFee(calculateFeeRequest).Value<int>("total");
-                        if (fee != 0 && fee < defaultService.Fee)
+                        if (fee != 0 && fee < calculateFee.Fee)
                         {
                             calculateFee.Store = new(store);
-                            defaultService.Fee = fee;
+                            calculateFee.Fee = fee;
                         }
                     }
                     catch
@@ -189,22 +187,13 @@ namespace HousewareWebAPI.Services
 
                 if (calculateFee.Store != null)
                 {
-                    GHNGetServiceRequest getServiceRequest = new()
-                    {
-                        Shop_id = calculateFee.Store.StoreId,
-                        From_district = calculateFee.Store.DistrictId,
-                        To_district = address.DistrictId
-                    };
-                    var getServices = _gHNService.GetService(getServiceRequest);
-
-                    if (getServices.Data != null)
-                    {
-                        var listService = JArray.Parse(getServices.Data.);
-                    }
+                    response.SetCode(CodeTypes.Success);
+                    response.SetResult(calculateFee);
                 }
-
-                response.SetCode(CodeTypes.Success);
-                response.SetResult(calculateFee);
+                else
+                {
+                    response.SetCode(CodeTypes.Err_NotFound);
+                }
             }
             catch (Exception e)
             {
