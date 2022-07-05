@@ -17,12 +17,12 @@ namespace HousewareWebAPI.Data.Entities
         /// Type: Json String. Property of a item: image
         /// </summary>
         public string Images { get; set; }
-        public int Price { get; set; }
-        public int Weight { get; set; }
-        public int Length { get; set; }
-        public int Width { get; set; }
-        public int Height { get; set; }
-        public int View { get; set; }
+        public uint Price { get; set; }
+        public uint Weight { get; set; }
+        public uint Length { get; set; }
+        public uint Width { get; set; }
+        public uint Height { get; set; }
+        public uint View { get; set; }
         /// <summary>
         /// Type: Json String. Property of a item: highlight
         /// </summary>

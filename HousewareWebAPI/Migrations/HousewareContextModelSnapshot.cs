@@ -91,8 +91,8 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
 
                     b.HasKey("CustomerId", "ProductId");
 
@@ -248,8 +248,8 @@ namespace HousewareWebAPI.Migrations
                     b.Property<Guid?>("AddressId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("int");
+                    b.Property<long>("Amount")
+                        .HasColumnType("bigint");
 
                     b.Property<Guid?>("CustomerId")
                         .HasColumnType("uniqueidentifier");
@@ -260,7 +260,7 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("OrderCode")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<DateTime>("OrderDate")
+                    b.Property<DateTime?>("OrderDate")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
@@ -268,7 +268,7 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("OrderStatus")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("nvarchar(max)")
-                        .HasDefaultValue("ODED");
+                        .HasDefaultValue("CRE");
 
                     b.Property<string>("PaymentType")
                         .ValueGeneratedOnAdd()
@@ -300,8 +300,8 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
 
                     b.HasKey("OrderId", "ProductId");
 
@@ -335,10 +335,10 @@ namespace HousewareWebAPI.Migrations
                         .HasColumnType("bit")
                         .HasDefaultValue(false);
 
-                    b.Property<int>("Height")
+                    b.Property<long>("Height")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.Property<string>("Highlights")
                         .HasColumnType("nvarchar(max)");
@@ -346,10 +346,10 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("Images")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Length")
+                    b.Property<long>("Length")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.Property<DateTime>("ModifyDate")
                         .ValueGeneratedOnAdd()
@@ -366,30 +366,30 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("Performance")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("Price")
+                    b.Property<long>("Price")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.Property<int>("Sort")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasDefaultValue(2147483647);
 
-                    b.Property<int>("View")
+                    b.Property<long>("View")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
-                    b.Property<int>("Weight")
+                    b.Property<long>("Weight")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
-                    b.Property<int>("Width")
+                    b.Property<long>("Width")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(0);
+                        .HasColumnType("bigint")
+                        .HasDefaultValue(0L);
 
                     b.HasKey("ProductId");
 
@@ -495,8 +495,8 @@ namespace HousewareWebAPI.Migrations
                     b.Property<string>("ProductId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<int>("Quantity")
-                        .HasColumnType("int");
+                    b.Property<long>("Quantity")
+                        .HasColumnType("bigint");
 
                     b.HasKey("StoreId", "ProductId");
 

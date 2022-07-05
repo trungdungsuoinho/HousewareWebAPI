@@ -14,7 +14,7 @@ namespace HousewareWebAPI.Services
 {
     public interface IOrderService
     {
-        public Response CreateOrderOffline(CreateOrderRequest model);
+        public Response CreateOrderOffline(CreateOrderOffineRequest model);
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
         public Response GetResutlOrderOnline(GetPreviewOrderRequest model);
@@ -41,7 +41,7 @@ namespace HousewareWebAPI.Services
             return _context.OrderDetails.Where(o => o.OrderId == orderId).Include(o => o.Product).ToList();
         }
 
-        public Response CreateOrderOffline(CreateOrderRequest model)
+        public Response CreateOrderOffline(CreateOrderOffineRequest model)
         {
             Response response = new();
             try
@@ -122,7 +122,7 @@ namespace HousewareWebAPI.Services
 
                     order.OrderCode = jObjCreateOrder.Value<string>("order_code");
                     order.OrderStatus = GlobalVariable.OrderDoing;
-                    order.Amount = createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee");
+                    order.Amount = (uint)(createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee"));
                     _context.Entry(order).State = EntityState.Modified;
                     _context.SaveChanges();
 
@@ -133,21 +133,22 @@ namespace HousewareWebAPI.Services
                     }
 
                     // Create response
-                    GetOrderResponse orderResponse = new()
+                    CreateOrderResponse orderResponse = new()
                     {
                         OrderId = order.OrderId,
                         OrderCode = order.OrderCode,
+                        SortCode = jObjCreateOrder.Value<string>("sort_code"),
                         Store = new StoreResponse(store),
                         Address = new AddressResponse(address),
-                        TotalPrice = createOrderRequest.Insurance_value,
-                        TotalFee = jObjCreateOrder.Value<int>("total_fee"),
+                        TotalPrice = (uint)createOrderRequest.Insurance_value,
+                        TotalFee = (uint)jObjCreateOrder.Value<int>("total_fee"),
                         Total = order.Amount,
                         ExpectedDeliveryTime = jObjCreateOrder.Value<DateTime>("expected_delivery_time")
                     };
                     var orderDetails = _context.OrderDetails.Where(o => o.OrderId == order.OrderId).Include(o => o.Product).ToList();
                     foreach (var orderDetail in orderDetails)
                     {
-                        orderResponse.Products.Add(new ProductInCartResponse
+                        orderResponse.Products.Add(new ProInCartResponse
                         {
                             ProductId = orderDetail.ProductId,
                             Name = orderDetail.Product.Name,
@@ -256,7 +257,7 @@ namespace HousewareWebAPI.Services
 
                     var jObjCreateOrder = _gHNService.PreviewOrder(createOrderRequest, store.ShopId);
 
-                    order.Amount = createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee");
+                    order.Amount = (uint)(createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee"));
                     order.OrderStatus = GlobalVariable.OrderPaymenting;
                     _context.Entry(order).State = EntityState.Modified;
                     _context.SaveChanges();
@@ -420,20 +421,21 @@ namespace HousewareWebAPI.Services
                     return response;
                 }
 
-                GetOrderResponse orderResponse = new()
+                CreateOrderResponse orderResponse = new()
                 {
                     OrderId = order.OrderId,
                     OrderCode = order.OrderCode,
+                    SortCode = jObjGetOrder.Value<string>("sort_code"),
                     Store = new StoreResponse(store),
                     Address = new AddressResponse(address),
-                    TotalPrice = jObjGetOrder.Value<int>("insurance_value"),
-                    TotalFee = order.Amount - jObjGetOrder.Value<int>("insurance_value"),
+                    TotalPrice = (uint)jObjGetOrder.Value<int>("insurance_value"),
+                    TotalFee = order.Amount - (uint)jObjGetOrder.Value<int>("insurance_value"),
                     Total = order.Amount,
                     ExpectedDeliveryTime = jObjGetOrder.Value<DateTime>("leadtime")
                 };
                 foreach (var orderDetail in order.OrderDetails)
                 {
-                    orderResponse.Products.Add(new ProductInCartResponse
+                    orderResponse.Products.Add(new ProInCartResponse
                     {
                         ProductId = orderDetail.ProductId,
                         Name = orderDetail.Product.Name,
@@ -494,12 +496,12 @@ namespace HousewareWebAPI.Services
                 {
                     Page = model.Page,
                     Size = model.Size,
-                    TotalPage = (int)Math.Ceiling((decimal)orders.Count / model.Size)
+                    TotalPage = (uint)Math.Ceiling((decimal)orders.Count / model.Size)
                 };
 
                 orders = orders.OrderBy(o => o.OrderDate)
-                    .Skip(model.Size * model.Page)
-                    .Take(model.Size)
+                    .Skip((int)(model.Size * model.Page))
+                    .Take((int)model.Size)
                     .ToList();
 
                 if (orders != null && orders.Count > 0)

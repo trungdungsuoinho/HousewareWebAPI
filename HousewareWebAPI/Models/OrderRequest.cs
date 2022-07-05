@@ -3,7 +3,7 @@ using System;
 
 namespace HousewareWebAPI.Models
 {
-    public class CreateOrderRequest
+    public class CreateOrderOffineRequest
     {
         [MyRequired]
         public Guid CustomerId { get; set; }
@@ -14,8 +14,15 @@ namespace HousewareWebAPI.Models
         public string Note { get; set; }
     }
 
-    public class CreateOrderOnlineRequest: CreateOrderRequest
+    public class CreateOrderOnlineRequest
     {
+        [MyRequired]
+        public Guid CustomerId { get; set; }
+        [MyRequired]
+        public Guid AddressId { get; set; }
+        [MyRequired]
+        public int StoreId { get; set; }
+        public string Note { get; set; }
         [MyRequired]
         public string ReturnUrl { get; set; }
     }
@@ -30,9 +37,8 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public Guid CustomerId { get; set; }
         public string Status { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Page { get; set; } = 0;
+        public uint Page { get; set; } = 0;
         [MyRange(1, int.MaxValue)]
-        public int Size { get; set; } = 10;
+        public uint Size { get; set; } = 10;
     }
 }

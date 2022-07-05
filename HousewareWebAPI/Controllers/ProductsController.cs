@@ -1,5 +1,4 @@
 ﻿using HousewareWebAPI.Helpers.Common;
-using HousewareWebAPI.Models;
 using HousewareWebAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -24,16 +23,7 @@ namespace HousewareWebAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult Get([FromRoute] string id)
         {
-            var response = _productService.GetSimpleProduct(id);
-            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
-            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
-            return Ok(response);
-        }
-
-        [HttpPost("search")]
-        public IActionResult Search([FromBody] SearchProductRequest model)
-        {
-            var response = _productService.Search(model);
+            var response = _productService.GetProduct(id);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);

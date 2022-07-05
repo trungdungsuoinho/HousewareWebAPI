@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace HousewareWebAPI.Models
 {
-    public class AddProductRequest
+    public class AddProAdminRequest
     {
         [MyRequired]
         public string ProductId { get; set; }
@@ -14,32 +14,21 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public ImageInput Avatar { get; set; }
         public List<ImageInput> Images { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Price { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Weight { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Length { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Width { get; set; }
-        [MyRange(0, int.MaxValue)]
-        public int Height { get; set; }
+        public uint Price { get; set; }
+        public uint Weight { get; set; }
+        public uint Length { get; set; }
+        public uint Width { get; set; }
+        public uint Height { get; set; }
         public List<string> Highlights { get; set; }
         public List<AddValueSpec> Specifications { get; set; }
-        public bool Enable { get; set; } = false;
+        public bool? Enable { get; set; }
     }
 
-    public class ModifySortProductRequest
+    public class ModifySortProAdminRequest
     {
         [MyRequired]
         public string CategoryId { get; set; }
         [MyRequired]
         public List<string> ProductIds { get; set; }
-    }
-
-    public class SearchProductRequest
-    {
-        [MyRequired]
-        public string Content { get; set; }
     }
 }

@@ -14,15 +14,14 @@ namespace HousewareWebAPI.Services
     public interface IProductService
     {
         public Product GetById(string id);
-        public Response GetSimpleProduct(string id);
+        public Response GetProduct(string id);
         public Response GetProAdmin(string id, bool? enable = null);
         public Response GetAllProAdmin(bool? enable = null);
         public Response GetProAdminByCatId(string id, bool? enable = null);
-        public Response AddProAdmin(AddProductRequest model);
-        public Response UpdateProAdmin(string id, AddProductRequest model);
+        public Response AddProAdmin(AddProAdminRequest model);
+        public Response UpdateProAdmin(string id, AddProAdminRequest model);
         public Response DeleteProAdmin(string id);
-        public Response ModifySort(ModifySortProductRequest model);
-        public Response Search(SearchProductRequest content, bool toLower = true);
+        public Response ModifySort(ModifySortProAdminRequest model);
     }
     public class ProductService : IProductService
     {
@@ -44,7 +43,7 @@ namespace HousewareWebAPI.Services
             return _context.Products.FirstOrDefault(c => c.ProductId == id.ToUpper());
         }
 
-        public Response GetSimpleProduct(string id)
+        public Response GetProduct(string id)
         {
             var response = new Response();
             try
@@ -57,7 +56,7 @@ namespace HousewareWebAPI.Services
                 }
                 else
                 {
-                    var result = new ProductResponse()
+                    var result = new GetProductResponse()
                     {
                         ProductId = product.ProductId,
                         Name = product.Name,
@@ -97,7 +96,7 @@ namespace HousewareWebAPI.Services
                 }
                 else
                 {
-                    var result = new ProductAdminResponse()
+                    var result = new GetProAdminResponse()
                     {
                         ProductId = product.ProductId,
                         CategoryId = product.CategoryId,
@@ -135,10 +134,10 @@ namespace HousewareWebAPI.Services
             try
             {
                 var products = _context.Products.Where(c => enable == null || c.Enable == enable).OrderBy(c => c.ProductId).ThenBy(c => c.Sort).ToList();
-                var result = new List<ProductAdminResponse>();
+                var result = new List<GetProAdminResponse>();
                 foreach (var product in products)
                 {
-                    result.Add(new ProductAdminResponse()
+                    result.Add(new GetProAdminResponse()
                     {
                         ProductId = product.ProductId,
                         CategoryId = product.CategoryId,
@@ -176,10 +175,10 @@ namespace HousewareWebAPI.Services
             try
             {
                 var products = _context.Products.Where(c => c.CategoryId == id.ToUpper() && (enable == null || c.Enable == enable)).OrderBy(c => c.Sort).ToList();
-                var result = new List<ProductAdminResponse>();
+                var result = new List<GetProAdminResponse>();
                 foreach (var product in products)
                 {
-                    result.Add(new ProductAdminResponse()
+                    result.Add(new GetProAdminResponse()
                     {
                         ProductId = product.ProductId,
                         CategoryId = product.CategoryId,
@@ -211,7 +210,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response AddProAdmin(AddProductRequest model)
+        public Response AddProAdmin(AddProAdminRequest model)
         {
             var response = new Response();
             try
@@ -277,7 +276,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response UpdateProAdmin(string id, AddProductRequest model)
+        public Response UpdateProAdmin(string id, AddProAdminRequest model)
         {
             var response = new Response();
             try
@@ -367,7 +366,7 @@ namespace HousewareWebAPI.Services
             }
         }
 
-        public Response ModifySort(ModifySortProductRequest model)
+        public Response ModifySort(ModifySortProAdminRequest model)
         {
             var response = new Response();
             var products = _context.Products.Where(c => c.CategoryId == model.CategoryId.ToUpper()).ToList();
@@ -379,33 +378,6 @@ namespace HousewareWebAPI.Services
             }
             _context.SaveChanges();
             response.SetCode(CodeTypes.Success);
-            return response;
-        }
-
-        public Response Search(SearchProductRequest model, bool toLower = true)
-        {
-            Response response = new ();
-            List<ProductSearchResponse> productsResult = new();
-
-            var products = _context.Products
-                .Where(p => p.ProductId.Contains(model.Content) || p.Name.Contains(model.Content))
-                .Select(p => new ProductSearchResponse()
-                {
-                    Product = new(p),
-                    Score = p.ProductId.Contains(model.Content) ? 100 : 89
-                })
-                .ToList();
-
-            var productIds = _context.ProductSpecifications
-                .Include(s => s.Specification)
-                .Where(s => s.Value.Contains(model.Content) || s.Specification.Name.Contains(model.Content))
-                .GroupBy(s => s.ProductId)
-                .Select(s => s.Key)
-                .ToList();
-
-
-            response.SetCode(CodeTypes.Success);
-            response.SetResult(products);
             return response;
         }
     }

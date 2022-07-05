@@ -22,7 +22,7 @@ namespace HousewareWebAPI.Models
         public string Name { get; set; }
         //public string Video { get; set; }
         public List<Advantage> Advantages { get; set; }
-        public List<ProductSummaryResponse> Products { get; set; }
+        public List<ProInGetCat> Products { get; set; }
     }
 
     public class GetCatAdminResponse

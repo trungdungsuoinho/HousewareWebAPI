@@ -13,7 +13,7 @@ namespace HousewareWebAPI.Models
     {
         [MyRequired]
         [MyRange(0, int.MaxValue)]
-        public int Quantity { get; set; }
+        public uint Quantity { get; set; }
     }
 
     public class DeleteCartRequest

@@ -70,7 +70,7 @@ namespace HousewareWebAPI.Controllers
         /// </summary>
         /// <param name="model"></param>
         [HttpPost]
-        public IActionResult Post([FromBody] AddProductRequest model)
+        public IActionResult Post([FromBody] AddProAdminRequest model)
         {
             var response = _productService.AddProAdmin(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -84,7 +84,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="id"></param>
         /// <param name="model"></param>
         [HttpPut("{id}")]
-        public IActionResult Put([FromRoute] string id, [FromBody] AddProductRequest model)
+        public IActionResult Put([FromRoute] string id, [FromBody] AddProAdminRequest model)
         {
             var response = _productService.UpdateProAdmin(id, model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
@@ -112,7 +112,7 @@ namespace HousewareWebAPI.Controllers
         /// <param name="model"></param>
         /// <returns></returns>
         [HttpPut("modifysort")]
-        public IActionResult ModifySort([FromBody] ModifySortProductRequest model)
+        public IActionResult ModifySort([FromBody] ModifySortProAdminRequest model)
         {
             var response = _productService.ModifySort(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
