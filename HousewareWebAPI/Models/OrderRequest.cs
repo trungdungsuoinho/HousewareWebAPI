@@ -10,7 +10,6 @@ namespace HousewareWebAPI.Models
         [MyRequired]
         public Guid AddressId { get; set; }
         [MyRequired]
-        public int StoreId { get; set; }
         public string Note { get; set; }
     }
 
@@ -20,7 +19,7 @@ namespace HousewareWebAPI.Models
         public string ReturnUrl { get; set; }
     }
 
-    public class GetPreviewOrderRequest
+    public class OrderIdRequest
     {
         public Guid OrderId { get; set; }
     }

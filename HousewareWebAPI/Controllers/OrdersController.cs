@@ -44,7 +44,7 @@ namespace HousewareWebAPI.Controllers
         }
 
         [HttpPost("preview")]
-        public IActionResult GetOrderPayment([FromBody] GetPreviewOrderRequest model)
+        public IActionResult GetOrderPayment([FromBody] OrderIdRequest model)
         {
             var response = _orderService.GetResutlOrderOnline(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
