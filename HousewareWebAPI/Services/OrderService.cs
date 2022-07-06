@@ -14,10 +14,11 @@ namespace HousewareWebAPI.Services
 {
     public interface IOrderService
     {
+        public Response CreateOrder(CreateOrderRequest model);
         public Response CreateOrderOffline(CreateOrderRequest model);
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
-        public Response GetResutlOrderOnline(GetPreviewOrderRequest model);
+        public Response GetResutlOrderOnline(OrderIdRequest model);
         public Response GetOrders(GetOrdersRequest model);
     }
 
@@ -27,13 +28,15 @@ namespace HousewareWebAPI.Services
         private readonly IGHNService _gHNService;
         private readonly IVNPayService _vNPayService;
         private readonly IStoredService _storedService;
+        private readonly IStoreService _storeService;
 
-        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService, IStoredService storedService)
+        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService, IStoredService storedService, IStoreService storeService)
         {
             _context = context;
             _gHNService = gHNService;
             _vNPayService = vNPayService;
             _storedService = storedService;
+            _storeService = storeService;
         }
 
         private List<OrderDetail> GetOrderDetails(Guid orderId)
@@ -41,12 +44,11 @@ namespace HousewareWebAPI.Services
             return _context.OrderDetails.Where(o => o.OrderId == orderId).Include(o => o.Product).ToList();
         }
 
-        public Response CreateOrderOffline(CreateOrderRequest model)
+        public Response CreateOrder(CreateOrderRequest model)
         {
             Response response = new();
             try
             {
-                GHNCreateOrderRequest createOrderRequest = new();
                 var customer = _context.Customers.Where(c => c.CustomerId == model.CustomerId).FirstOrDefault();
                 if (customer == null)
                 {
@@ -54,48 +56,42 @@ namespace HousewareWebAPI.Services
                     response.SetResult("Customer does not exist!");
                     return response;
                 }
-                createOrderRequest.To_name = customer.FullName ?? GlobalVariable.GHNToNameDefault;
-
-                _context.Entry(customer).Collection(cu => cu.Carts).Query().Include(ca => ca.Product).Load();
-                if (customer.Carts == null || customer.Carts.Count == 0)
-                {
-                    response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("This cart is empty!");
-                    return response;
-                }
-                createOrderRequest.SetValueProduct(customer.Carts.ToList());
-
                 var address = _context.Addresses.Where(a => a.AddressId == model.AddressId && a.CustomerId == model.CustomerId).FirstOrDefault();
                 if (address == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("This address could not be found in the customer's address book!");
+                    response.SetResult("This address could not be found in the customer's address book");
                     return response;
                 }
-                createOrderRequest.SetValueAddress(address);
 
-                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
-                if (store == null)
+                var store = _storeService.GetFeeStore(new GetFeeRequest()
                 {
-                    response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("Store does not exist!");
-                    return response;
-                }
-                createOrderRequest.SetValueStore(store);
+                    CustomerId = customer.CustomerId,
+                    AddressId = address.AddressId
+                });
 
-                // Create order and move list product from cart into order detail
-                Order order = new();
+                if (store.ResultCode != 0)
+                {
+                    return store;
+                }
+
+                // Create order and move list product from cart into order detail                
                 using var transaction = _context.Database.BeginTransaction();
                 try
                 {
-                    order.CustomerId = model.CustomerId;
-                    order.AddressId = model.AddressId;
-                    order.StoreId = model.StoreId;
-                    order.PaymentType = GlobalVariable.PayCod;
-                    order.Note = model.Note;
+                    GetCalculateFee calculateFee = (GetCalculateFee)store.Result;
+                    Order order = new()
+                    {
+                        CustomerId = model.CustomerId,
+                        AddressId = model.AddressId,
+                        StoreId = calculateFee.Store.StoreId,
+                        OrderStatus = GlobalVariable.OrderOrdered,
+                        Note = model.Note
+                    };
                     _context.Orders.Add(order);
                     _context.SaveChanges();
 
+                    _context.Entry(customer).Collection(c => c.Carts).Load();
                     foreach (var cart in customer.Carts)
                     {
                         OrderDetail orderDetail = new()
@@ -111,52 +107,19 @@ namespace HousewareWebAPI.Services
                     _context.Carts.RemoveRange(customer.Carts);
                     _context.SaveChanges();
 
-                    // Create order GHN
-                    createOrderRequest.Client_order_code = order.OrderId.ToString();
-                    createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
-                    createOrderRequest.Content = GlobalVariable.GHNContent(createOrderRequest.Client_order_code);
-                    createOrderRequest.Payment_type_id = 2;
-                    createOrderRequest.Note = order.Note;
+                    // Create response
+                    _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(o => o.Product).Load();
+                    CreateOrderResponse orderResponse = new(order)
+                    {
+                        Store = calculateFee.Store,
+                        Address = new AddressResponse(address),
+                        TotalFee = calculateFee.Fee
+                    };
+                    orderResponse.Total = orderResponse.TotalPrice + orderResponse.TotalFee;
 
-                    var jObjCreateOrder = _gHNService.CreateOrder(createOrderRequest, store.ShopId);
-
-                    order.OrderCode = jObjCreateOrder.Value<string>("order_code");
-                    order.OrderStatus = GlobalVariable.OrderDoing;
-                    order.Amount = createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee");
+                    order.Amount = orderResponse.Total;
                     _context.Entry(order).State = EntityState.Modified;
                     _context.SaveChanges();
-
-                    _context.Entry(order).Collection(o => o.OrderDetails).Load();
-                    if (!_storedService.DecreaseStored(store, order.OrderDetails.ToList()))
-                    {
-                        throw new Exception("Can't decrease stored");
-                    }
-
-                    // Create response
-                    GetOrderResponse orderResponse = new()
-                    {
-                        OrderId = order.OrderId,
-                        OrderCode = order.OrderCode,
-                        Store = new StoreResponse(store),
-                        Address = new AddressResponse(address),
-                        TotalPrice = createOrderRequest.Insurance_value,
-                        TotalFee = jObjCreateOrder.Value<int>("total_fee"),
-                        Total = order.Amount,
-                        ExpectedDeliveryTime = jObjCreateOrder.Value<DateTime>("expected_delivery_time")
-                    };
-                    var orderDetails = _context.OrderDetails.Where(o => o.OrderId == order.OrderId).Include(o => o.Product).ToList();
-                    foreach (var orderDetail in orderDetails)
-                    {
-                        orderResponse.Products.Add(new ProductInCartResponse
-                        {
-                            ProductId = orderDetail.ProductId,
-                            Name = orderDetail.Product.Name,
-                            Avatar = orderDetail.Product.Avatar,
-                            Price = orderDetail.Product.Price,
-                            Quantity = orderDetail.Quantity,
-                            ItemPrice = orderDetail.Product.Price* orderDetail.Quantity
-                        });
-                    }
                     transaction.Commit();
                     response.SetCode(CodeTypes.Success);
                     response.SetResult(orderResponse);
@@ -177,13 +140,67 @@ namespace HousewareWebAPI.Services
             return response;
         }
 
+        public Response CreateOrderOffline(CreateOrderRequest model)
+        {
+            Response response = CreateOrder(model);
+            if (response.ResultCode == 0)
+            {
+                CreateOrderResponse createOrder = (CreateOrderResponse)response.Result;
+                var order = _context.Orders.Where(o => o.OrderId == createOrder.OrderId).FirstOrDefault();
+                if (order != null)
+                {
+                    order.PaymentType = GlobalVariable.PayCod;
+                    order.OrderStatus = GlobalVariable.OrderProcessing;
+                    _context.Entry(order).State = EntityState.Modified;
+                    _context.SaveChanges();
+                }
+            }
+            return response;
+        }
+
         public Response CreateOrderOnline(CreateOrderOnlineRequest model)
+        {
+            Response response = CreateOrder(model);
+            if (response.ResultCode == 0)
+            {
+                CreateOrderResponse createOrder = (CreateOrderResponse)response.Result;
+                var order = _context.Orders.Where(o => o.OrderId == createOrder.OrderId).FirstOrDefault();
+                if (order != null)
+                {
+                    order.PaymentType = GlobalVariable.PayOnline;
+                    order.OrderStatus = GlobalVariable.OrderPaymenting;
+                    _context.Entry(order).State = EntityState.Modified;
+                    _context.SaveChanges();
+
+                    try
+                    {
+                        var url = _vNPayService.GeneratePaymentURL(model.ReturnUrl, order.OrderId, order.Amount);
+                        response.SetResult(url);
+                    }
+                    catch (Exception e)
+                    {
+                        response.SetCode(CodeTypes.Err_Exception);
+                        response.SetResult("Create order failed! " + e.Message);
+                    }
+                }
+            }
+            return response;
+        }
+
+        public Response CreateOrderGHN(OrderIdRequest model)
         {
             Response response = new();
             try
             {
                 GHNCreateOrderRequest createOrderRequest = new();
-                var customer = _context.Customers.Where(c => c.CustomerId == model.CustomerId).FirstOrDefault();
+                var order = _context.Orders.Where(o => o.OrderId == model.OrderId).FirstOrDefault();
+                if (order == null)
+                {
+                    response.SetCode(CodeTypes.Err_NotExist);
+                    response.SetResult("Order does not exist!");
+                    return response;
+                }
+                var customer = _context.Customers.Where(c => c.CustomerId == order.CustomerId).FirstOrDefault();
                 if (customer == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
@@ -192,89 +209,82 @@ namespace HousewareWebAPI.Services
                 }
                 createOrderRequest.To_name = customer.FullName ?? GlobalVariable.GHNToNameDefault;
 
-                _context.Entry(customer).Collection(cu => cu.Carts).Query().Include(ca => ca.Product).Load();
-                if (customer.Carts == null || customer.Carts.Count == 0)
+                _context.Entry(order).Collection(o => o.OrderDetails).Query().Include(od => od.Product).Load();
+                if (order.OrderDetails == null || order.OrderDetails.Count == 0)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("This cart is empty!");
+                    response.SetResult("This order is empty!");
                     return response;
                 }
-                createOrderRequest.SetValueProduct(customer.Carts.ToList());
+                createOrderRequest.SetValueProduct(order.OrderDetails.ToList());
 
-                var address = _context.Addresses.Where(a => a.AddressId == model.AddressId && a.CustomerId == model.CustomerId).FirstOrDefault();
-                if (address == null)
+                _context.Entry(order).Reference(o => o.Address).Load();
+                if (order.Address == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
-                    response.SetResult("This address could not be found in the customer's address book!");
+                    response.SetResult("Address does not exist!");
                     return response;
                 }
-                createOrderRequest.SetValueAddress(address);
+                createOrderRequest.SetValueAddress(order.Address);
 
-                var store = _context.Stores.Where(s => s.StoreId == model.StoreId).FirstOrDefault();
-                if (store == null)
+                _context.Entry(order).Reference(o => o.Store).Load();
+                if (order.Store == null)
                 {
                     response.SetCode(CodeTypes.Err_NotExist);
                     response.SetResult("Store does not exist!");
                     return response;
                 }
-                createOrderRequest.SetValueStore(store);
+                createOrderRequest.SetValueStore(order.Store);
 
-                // Create priview order
-                Order order = new();
-                using var transaction = _context.Database.BeginTransaction();
-                try
+                // Create order GHN
+                createOrderRequest.Client_order_code = order.OrderId.ToString();
+                createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
+                createOrderRequest.Content = GlobalVariable.GHNContent(createOrderRequest.Client_order_code);
+                createOrderRequest.Payment_type_id = 2;
+                createOrderRequest.Note = order.Note;
+
+                var jObjCreateOrder = _gHNService.CreateOrder(createOrderRequest, order.Store.ShopId);
+
+                order.OrderCode = jObjCreateOrder.Value<string>("order_code");
+                order.OrderStatus = GlobalVariable.OrderDoing;
+                order.Amount = createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee");
+                _context.Entry(order).State = EntityState.Modified;
+
+                if (!_storedService.DecreaseStored(order.Store, order.OrderDetails.ToList()))
                 {
-                    order.CustomerId = model.CustomerId;
-                    order.AddressId = model.AddressId;
-                    order.StoreId = model.StoreId;
-                    order.PaymentType = GlobalVariable.PayOnline;
-                    order.Note = model.Note;
-                    _context.Orders.Add(order);
-                    _context.SaveChanges();
+                    throw new Exception("Can't decrease stored");
+                }
+                _context.SaveChanges();
 
-                    foreach (var cart in customer.Carts)
+                // Create response
+                GetOrderResponse orderResponse = new()
+                {
+                    OrderId = order.OrderId,
+                    OrderCode = order.OrderCode,
+                    Store = new StoreResponse(order.Store),
+                    Address = new AddressResponse(order.Address),
+                    TotalPrice = createOrderRequest.Insurance_value,
+                    TotalFee = jObjCreateOrder.Value<int>("total_fee"),
+                    Total = order.Amount,
+                    ExpectedDeliveryTime = jObjCreateOrder.Value<DateTime>("expected_delivery_time")
+                };
+                var orderDetails = _context.OrderDetails.Where(o => o.OrderId == order.OrderId).Include(o => o.Product).ToList();
+                foreach (var orderDetail in orderDetails)
+                {
+                    orderResponse.Products.Add(new ProductInCartResponse
                     {
-                        OrderDetail orderDetail = new()
-                        {
-                            OrderId = order.OrderId,
-                            ProductId = cart.ProductId,
-                            Quantity = cart.Quantity,
-                        };
-                        _context.OrderDetails.Add(orderDetail);
-                    }
-                    _context.SaveChanges();
-
-                    _context.Carts.RemoveRange(customer.Carts);
-                    _context.SaveChanges();
-
-                    // Create order GHN
-                    createOrderRequest.Client_order_code = order.OrderId.ToString();
-                    createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
-                    createOrderRequest.Content = GlobalVariable.GHNContent(createOrderRequest.Client_order_code);
-                    createOrderRequest.Payment_type_id = 2;
-                    createOrderRequest.Note = order.Note;
-
-                    var jObjCreateOrder = _gHNService.PreviewOrder(createOrderRequest, store.ShopId);
-
-                    order.Amount = createOrderRequest.Insurance_value + jObjCreateOrder.Value<int>("total_fee");
-                    order.OrderStatus = GlobalVariable.OrderPaymenting;
-                    _context.Entry(order).State = EntityState.Modified;
-                    _context.SaveChanges();
-
-                    var url = _vNPayService.GeneratePaymentURL(model.ReturnUrl, order.OrderId, (int)order.Amount);
-
-                    transaction.Commit();
-                    response.SetCode(CodeTypes.Success);
-                    response.SetResult(url);
+                        ProductId = orderDetail.ProductId,
+                        Name = orderDetail.Product.Name,
+                        Avatar = orderDetail.Product.Avatar,
+                        Price = orderDetail.Product.Price,
+                        Quantity = orderDetail.Quantity,
+                        ItemPrice = orderDetail.Product.Price * orderDetail.Quantity
+                    });
                 }
-                catch (Exception e)
-                {
-                    transaction.Rollback();
-                    response.SetCode(CodeTypes.Err_AccFail);
-                    response.SetResult("Create order failed! " + e.Message);
-                    return response;
-                }
+                response.SetCode(CodeTypes.Success);
+                response.SetResult(orderResponse);
             }
+
             catch (Exception e)
             {
                 response.SetCode(CodeTypes.Err_Exception);
@@ -370,7 +380,7 @@ namespace HousewareWebAPI.Services
             return response;
         }
 
-        public Response GetResutlOrderOnline(GetPreviewOrderRequest model)
+        public Response GetResutlOrderOnline(OrderIdRequest model)
         {
             Response response = new();
             try
