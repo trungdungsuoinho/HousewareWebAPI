@@ -17,6 +17,7 @@ namespace HousewareWebAPI.Services
         public Response CreateOrder(CreateOrderRequest model);
         public Response CreateOrderOffline(CreateOrderRequest model);
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
+        public Response CreateOrderGHN(OrderIdRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
         public Response GetResutlOrderOnline(OrderIdRequest model);
         public Response GetOrders(GetOrdersRequest model);
@@ -200,6 +201,8 @@ namespace HousewareWebAPI.Services
                     response.SetResult("Order does not exist!");
                     return response;
                 }
+                createOrderRequest.Client_order_code = order.OrderId.ToString();
+
                 var customer = _context.Customers.Where(c => c.CustomerId == order.CustomerId).FirstOrDefault();
                 if (customer == null)
                 {
@@ -237,7 +240,6 @@ namespace HousewareWebAPI.Services
                 createOrderRequest.SetValueStore(order.Store);
 
                 // Create order GHN
-                createOrderRequest.Client_order_code = order.OrderId.ToString();
                 createOrderRequest.Cod_amount = createOrderRequest.Insurance_value;
                 createOrderRequest.Content = GlobalVariable.GHNContent(createOrderRequest.Client_order_code);
                 createOrderRequest.Payment_type_id = 2;
