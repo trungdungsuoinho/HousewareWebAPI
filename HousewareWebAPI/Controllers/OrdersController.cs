@@ -60,5 +60,14 @@ namespace HousewareWebAPI.Controllers
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);
         }
+
+        [HttpPost("approve")]
+        public IActionResult ApproveOrder([FromBody] OrderIdRequest model)
+        {
+            var response = _orderService.CreateOrderGHN(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
     }
 }

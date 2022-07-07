@@ -87,12 +87,12 @@ namespace HousewareWebAPI.Helpers.Models
                 {
                     throw new Exception("There is a product not found in the cart");
                 }
-                Insurance_value += (int)(cart.Product.Price * cart.Quantity);
-                Weight += (int)(cart.Product.Weight * cart.Quantity);
+                Insurance_value += cart.Product.Price * cart.Quantity;
+                Weight += cart.Product.Weight * cart.Quantity;
                 volume += cart.Product.Length * cart.Product.Width * cart.Product.Height * cart.Quantity;
                 Items.Add(new GHNItem(cart));
             }
-            volume = Math.Pow(volume, (double)(1 / 3));
+            volume = Math.Pow(volume, 1/3);
             Length = Width = Height = (int)Math.Floor(volume);
         }
 
@@ -105,12 +105,12 @@ namespace HousewareWebAPI.Helpers.Models
                 {
                     throw new Exception("There is a product not found in the cart");
                 }
-                Insurance_value += (int)(orderDetail.Product.Price * orderDetail.Quantity);
-                Weight += (int)(orderDetail.Product.Weight * orderDetail.Quantity);
+                Insurance_value += orderDetail.Product.Price * orderDetail.Quantity;
+                Weight += orderDetail.Product.Weight * orderDetail.Quantity;
                 volume += orderDetail.Product.Length * orderDetail.Product.Width * orderDetail.Product.Height * orderDetail.Quantity;
                 Items.Add(new GHNItem(orderDetail));
             }
-            volume = Math.Pow(volume, (double)(1 / 3));
+            volume = Math.Pow(volume, 1/3);
             Length = Width = Height = (int)Math.Floor(volume);
         }
 
@@ -142,18 +142,18 @@ namespace HousewareWebAPI.Helpers.Models
         {
             Name = cart.Product.Name;
             Code = cart.ProductId;
-            Quantity = (int)cart.Quantity;
-            Price = (int)cart.Product.Price;
-            Weight = (int)cart.Product.Weight;
+            Quantity = cart.Quantity;
+            Price = cart.Product.Price;
+            Weight = cart.Product.Weight;
         }
 
         public GHNItem(OrderDetail orderDetail)
         {
             Name = orderDetail.Product.Name;
             Code = orderDetail.ProductId;
-            Quantity = (int)orderDetail.Quantity;
-            Price = (int)orderDetail.Product.Price;
-            Weight = (int)orderDetail.Product.Weight;
+            Quantity = orderDetail.Quantity;
+            Price = orderDetail.Product.Price;
+            Weight = orderDetail.Product.Weight;
         }
     }
 
