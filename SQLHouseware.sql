@@ -188,6 +188,6 @@ SELECT * FROM Orders WHERE CustomerId = '2a0a27c3-2290-4806-7203-08da3b719d82' A
 SELECT TOP 10 * FROM Orders ORDER BY OrderDate
 SELECT OrderStatus, COUNT(*) FROM Orders GROUP BY OrderStatus
 
-UPDATE Orders SET OrderStatus = 'CANL' WHERE OrderStatus = 'CAL'
+UPDATE Orders SET OrderStatus = 'PRSS' WHERE OrderStatus = 'PAED'
 
-SELECT * FROM Orders WHERE ProductId = 'CT22PLUS' ORDER BY Sort;
+SELECT * FROM Orders WHERE PaymentType = 'ONL' AND OrderCode iS NOT NULL Order by OrderDate desc;
