@@ -16,7 +16,6 @@
         // Payment Status
         public const string OrderOrdered = "ODED";
         public const string OrderPaymenting = "PAIN";
-        public const string OrderPaymented = "PAED";
         public const string OrderProcessing = "PRSS";
         public const string OrderDoing = "DOIN";
         public const string OrderDone = "DONE";

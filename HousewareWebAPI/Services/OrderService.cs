@@ -308,7 +308,7 @@ namespace HousewareWebAPI.Services
                     {
                         if (model.Vnp_ResponseCode == "00" && model.Vnp_TransactionStatus == "00")
                         {
-                            order.OrderStatus = GlobalVariable.OrderPaymented;
+                            order.OrderStatus = GlobalVariable.OrderProcessing;
                             order.TransactionNo = model.Vnp_TransactionNo;
                             _context.SaveChanges();
 
@@ -486,7 +486,7 @@ namespace HousewareWebAPI.Services
                         orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderPaymenting).ToList();
                         break;
                     case GlobalVariable.OrderProcessing:
-                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && (o.OrderStatus == GlobalVariable.OrderOrdered || o.OrderStatus == GlobalVariable.OrderPaymented)).ToList();
+                        orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderProcessing).ToList();
                         break;
                     case GlobalVariable.OrderDoing:
                         orders = _context.Orders.Where(o => o.CustomerId == model.CustomerId && o.OrderStatus == GlobalVariable.OrderDoing).ToList();
@@ -542,10 +542,6 @@ namespace HousewareWebAPI.Services
                             }
                         }
                         var orderRes = new GetOrderResponse(order);
-                        if (orderRes.Status == GlobalVariable.OrderOrdered || orderRes.Status == GlobalVariable.OrderPaymented)
-                        {
-                            orderRes.Status = GlobalVariable.OrderProcessing;
-                        }
                         orderPagingResponse.Orders.Add(orderRes);
                     }
                 }
