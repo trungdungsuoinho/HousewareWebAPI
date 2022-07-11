@@ -192,4 +192,15 @@ UPDATE Orders SET OrderStatus = 'PRSS' WHERE OrderStatus = 'PAED'
 
 SELECT * FROM Orders WHERE PaymentType = 'ONL' AND OrderCode iS NOT NULL Order by OrderDate desc;
 
-SELECT * FROM Products Order By modifydate desc
+UPDATE Orders SET Fee = tbl.Fee  
+FROM
+(SELECT o.OrderId, SUM(p.Price) Fee
+FROM Orders o INNER JOIN OrderDetails od ON o.OrderId = od.OrderId INNER JOIN Products p ON od.ProductId = p.ProductId
+GROUP BY o.OrderId) tbl
+WHERE Orders.OrderId = tbl.OrderId
+
+SELECT tbl.OrderId, tbl.Amount, tbl.TotalPrice, (tbl.Amount - tbl.TotalPrice) Fee
+FROM
+(SELECT o.OrderId, MAX(o.Amount) Amount, SUM(p.Price) TotalPrice
+FROM Orders o INNER JOIN OrderDetails od ON o.OrderId = od.OrderId INNER JOIN Products p ON od.ProductId = p.ProductId
+GROUP BY o.OrderId) tbl
