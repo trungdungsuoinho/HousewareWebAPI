@@ -13,8 +13,8 @@ namespace HousewareWebAPI.Helpers.Services
     {
         public JObject RegisterShop(GHNRegisterShopRequest model);
         public JObject CalculateFee(GHNCalculateFeeRequest model);
-        public JObject CreateOrder(GHNCreateOrderRequest model, int shopId);
-        public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId);
+        public GHNResponse CreateOrder(GHNCreateOrderRequest model, int shopId);
+        public GHNResponse PreviewOrder(GHNCreateOrderRequest model, int shopId);
         public JObject GetOrder(string orderId);
         public GHNResponse OrderInfo(GHNOrderInfoRequest model);
         public GHNResponse GetService(GHNGetServiceRequest model);
@@ -29,12 +29,16 @@ namespace HousewareWebAPI.Helpers.Services
             _appSettings = appSettings.Value;
         }
 
-        private GHNResponse CallAPI(string url, JObject data)
+        private GHNResponse CallAPI(string url, JObject data, int? shopId = null)
         {
             GHNResponse response = new();
             var httpWebRequest = (HttpWebRequest)WebRequest.Create(url);
             httpWebRequest.Method = "POST";
             httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
+            if (shopId != null)
+            {
+                httpWebRequest.Headers.Add("ShopId", shopId.ToString());
+            }
             httpWebRequest.ContentType = "application/json; charset=utf-8";
             using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
             {
@@ -114,70 +118,14 @@ namespace HousewareWebAPI.Helpers.Services
             }
         }
 
-        public JObject CreateOrder(GHNCreateOrderRequest model, int shopId)
+        public GHNResponse CreateOrder(GHNCreateOrderRequest model, int shopId)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/create");
-            httpWebRequest.Method = "POST";
-            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
-            httpWebRequest.Headers.Add("ShopId", shopId.ToString());
-            httpWebRequest.ContentType = "application/json; charset=utf-8";
-
-            string resultJson;
-
-            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
-            {
-                streamWriter.Write(JObject.FromObject(model));
-            }
-
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                resultJson = streamReader.ReadToEnd();
-            }
-
-            var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
-
-            if (result.Code == 200)
-            {
-                return result.Data;
-            }
-            else
-            {
-                throw new Exception(result.Message);
-            }
+            return CallAPI(_appSettings.GHNURLCreateOrder, JObject.FromObject(model), shopId);
         }
 
-        public JObject PreviewOrder(GHNCreateOrderRequest model, int shopId)
+        public GHNResponse PreviewOrder(GHNCreateOrderRequest model, int shopId)
         {
-            var httpWebRequest = (HttpWebRequest)WebRequest.Create("https://dev-online-gateway.ghn.vn/shiip/public-api/v2/shipping-order/preview");
-            httpWebRequest.Method = "POST";
-            httpWebRequest.Headers.Add("Token", _appSettings.GHNToken);
-            httpWebRequest.Headers.Add("ShopId", shopId.ToString());
-            httpWebRequest.ContentType = "application/json; charset=utf-8";
-
-            string resultJson;
-
-            using (StreamWriter streamWriter = new(httpWebRequest.GetRequestStream()))
-            {
-                streamWriter.Write(JObject.FromObject(model));
-            }
-
-            var httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
-            using (var streamReader = new StreamReader(httpResponse.GetResponseStream()))
-            {
-                resultJson = streamReader.ReadToEnd();
-            }
-
-            var result = JsonConvert.DeserializeObject<GHNResponse>(resultJson);
-
-            if (result.Code == 200)
-            {
-                return result.Data;
-            }
-            else
-            {
-                throw new Exception(result.Message);
-            }
+            return CallAPI(_appSettings.GHNURLPreviewOrder, JObject.FromObject(model), shopId);
         }
 
         public JObject GetOrder(string orderId)

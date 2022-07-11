@@ -61,6 +61,15 @@ namespace HousewareWebAPI.Controllers
             return Ok(response);
         }
 
+        [HttpPost("admin/get")]
+        public IActionResult GetListOrderAdmin([FromBody] GetOrdersAdminRequest model)
+        {
+            var response = _orderService.GetOrdersAdmin(model);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
         [HttpPost("approve")]
         public IActionResult ApproveOrder([FromBody] OrderIdRequest model)
         {

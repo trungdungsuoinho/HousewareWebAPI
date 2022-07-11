@@ -25,13 +25,11 @@ namespace HousewareWebAPI.Services
     {
         private readonly HousewareContext _context;
         private readonly IGHNService _gHNService;
-        private readonly IStoredService _storedService;
 
-        public StoreService(HousewareContext context, IGHNService gHNService, IStoredService storedService)
+        public StoreService(HousewareContext context, IGHNService gHNService)
         {
             _context = context;
             _gHNService = gHNService;
-            _storedService = storedService;
         }
 
         private Store GetById(int id)
@@ -167,6 +165,7 @@ namespace HousewareWebAPI.Services
                 calculateFeeRequest.To_ward_code = address.WardId;
                 calculateFeeRequest.To_district_id = address.DistrictId;
 
+                // Find minimum fee
                 GetCalculateFee calculateFee = new();
                 foreach (var store in _context.Stores.ToList())
                 {
@@ -185,6 +184,7 @@ namespace HousewareWebAPI.Services
                     }
                 }
 
+                // Return best store
                 if (calculateFee.Store != null)
                 {
                     response.SetCode(CodeTypes.Success);

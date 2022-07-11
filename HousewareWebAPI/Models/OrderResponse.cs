@@ -60,7 +60,6 @@ namespace HousewareWebAPI.Models
         public int TotalFee { get; set; }
         public int Total { get; set; }
         public string Status { get; set; }
-        public DateTime ExpectedDeliveryTime { get; set; }
         
         public GetOrderResponse()
         {
@@ -84,8 +83,8 @@ namespace HousewareWebAPI.Models
                 });
             }
             TotalPrice = Products.Sum(p => p.Price);
-            Total = order.Amount;
-            TotalFee = Total - TotalPrice;
+            TotalFee = order.Fee;
+            Total = TotalPrice + TotalFee;
             Status = order.OrderStatus;
         }
     }
