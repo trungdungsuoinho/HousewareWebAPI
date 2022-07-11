@@ -22,12 +22,25 @@ namespace HousewareWebAPI.Models
     public class OrderIdRequest
     {
         public Guid OrderId { get; set; }
+        public OrderIdRequest(Guid orderId)
+        {
+            OrderId = orderId;
+        }
     }
 
     public class GetOrdersRequest
     {
         [MyRequired]
         public Guid CustomerId { get; set; }
+        public string Status { get; set; }
+        [MyRange(0, int.MaxValue)]
+        public int Page { get; set; } = 0;
+        [MyRange(1, int.MaxValue)]
+        public int Size { get; set; } = 10;
+    }
+
+    public class GetOrdersAdminRequest
+    {
         public string Status { get; set; }
         [MyRange(0, int.MaxValue)]
         public int Page { get; set; } = 0;
