@@ -19,7 +19,7 @@ namespace HousewareWebAPI.Services
         public Response CreateOrderOnline(CreateOrderOnlineRequest model);
         public Response CreateOrderGHN(OrderIdRequest model);
         public IPNVNPayResponse IPNVNPay(CodeIPNURLRequest model);
-        public Response GetResutlOrderOnline(OrderIdRequest model);
+        public Response GetResutlOrder(OrderIdRequest model);
         public Response GetOrders(GetOrdersRequest model);
     }
 
@@ -336,7 +336,7 @@ namespace HousewareWebAPI.Services
             return response;
         }
 
-        public Response GetResutlOrderOnline(OrderIdRequest model)
+        public Response GetResutlOrder(OrderIdRequest model)
         {
             Response response = new();
             try

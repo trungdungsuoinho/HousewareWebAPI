@@ -11,6 +11,7 @@ namespace HousewareWebAPI.Data.Entities
         public DateTime OrderDate { get; set; }
         public string OrderStatus { get; set; }
         public string PaymentType { get; set; }
+        public int Fee { get; set; }
         public int Amount { get; set; }
         public string Note { get; set; }
         public string TransactionNo { get; set; }

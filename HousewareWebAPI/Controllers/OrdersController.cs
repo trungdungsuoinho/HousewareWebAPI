@@ -46,7 +46,7 @@ namespace HousewareWebAPI.Controllers
         [HttpPost("preview")]
         public IActionResult GetOrderPayment([FromBody] OrderIdRequest model)
         {
-            var response = _orderService.GetResutlOrderOnline(model);
+            var response = _orderService.GetResutlOrder(model);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
             return Ok(response);

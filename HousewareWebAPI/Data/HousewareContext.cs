@@ -66,8 +66,6 @@ namespace Houseware.WebAPI.Data
             modelBuilder.Entity<Address>().Property(a => a.ModifyDate).HasDefaultValueSql("GETUTCDATE() AT TIME ZONE 'N. Central Asia Standard Time'");
             modelBuilder.Entity<Address>().HasOne(a => a.Customer).WithMany(c => c.Addresses).HasForeignKey(a => a.CustomerId);
 
-            // Store
-
             // Stored
             modelBuilder.Entity<Stored>().HasKey(s => new { s.StoreId, s.ProductId });
 
