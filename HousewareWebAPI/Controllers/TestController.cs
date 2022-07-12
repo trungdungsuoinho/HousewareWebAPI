@@ -12,11 +12,13 @@ namespace HousewareWebAPI.Controllers
     {
         private readonly IVNPayService _vNPayService;
         private readonly ITwilioService _twilioService;
+        private readonly ISendGridService _sendGridService;
 
-        public TestController(IVNPayService vNPayService, ITwilioService twilioService)
+        public TestController(IVNPayService vNPayService, ITwilioService twilioService, ISendGridService sendGridService)
         {
             _vNPayService = vNPayService;
             _twilioService = twilioService;
+            _sendGridService = sendGridService;
         }
 
         [HttpGet("payment")]
@@ -46,6 +48,17 @@ namespace HousewareWebAPI.Controllers
         {
             Response response = new();
             response.SetResult(_twilioService.SendVerification("0334071056"));
+            response.SetCode(CodeTypes.Success);
+            if (response == null) return BadRequest(CodeTypes.Err_Unknown);
+            if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
+            return Ok(response);
+        }
+
+        [HttpGet("sendmail")]
+        public IActionResult SendMail()
+        {
+            Response response = new();
+            _sendGridService.TestSendMail();
             response.SetCode(CodeTypes.Success);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);

@@ -28,5 +28,7 @@
         public string TwilioAuthToken { get; set; }
         public string TwilioPhoneNumber { get; set; }
         public string TwilioServiceSID { get; set; }
+        // SendGrid
+        public string SendGridKey { get; set; }
     }
 }
