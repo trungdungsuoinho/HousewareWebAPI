@@ -31,14 +31,16 @@ namespace HousewareWebAPI.Services
         private readonly IVNPayService _vNPayService;
         private readonly IStoredService _storedService;
         private readonly IStoreService _storeService;
+        private readonly ITwilioService _twilioService;
 
-        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService, IStoredService storedService, IStoreService storeService)
+        public OrderService(HousewareContext context, IGHNService gHNService, IVNPayService vNPayService, IStoredService storedService, IStoreService storeService, ITwilioService twilioService)
         {
             _context = context;
             _gHNService = gHNService;
             _vNPayService = vNPayService;
             _storedService = storedService;
             _storeService = storeService;
+            _twilioService = twilioService;
         }
 
         public Response CreateOrder(CreateOrderRequest model)
@@ -146,6 +148,16 @@ namespace HousewareWebAPI.Services
                         response.SetResult("Create order failed! " + e.Message);
                         return response;
                     }
+                }
+
+                if (customer.Phone != null && customer.VerifyPhone == "Y")
+                {
+                    _twilioService.SendSMS(customer.Phone, string.Format("Xin chào {0}. Bạn đã đặt đơn hàng trên Houseware. Mã đơn hàng: {1}. Giá trị đơn hàng: {2}. Phí giao hàng: {3}. Tổng đơn hàng {4}",
+                        customer.FullName,
+                        order.OrderId,
+                        createOrderRequest.Insurance_value,
+                        order.Fee,
+                        createOrderRequest.Insurance_value + order.Fee));
                 }
 
                 response.SetCode(CodeTypes.Success);

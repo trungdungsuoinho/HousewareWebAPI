@@ -30,5 +30,7 @@
         public string TwilioServiceSID { get; set; }
         // SendGrid
         public string SendGridKey { get; set; }
+        public string EmailFrom { get; set; }
+        public string NameFrom { get; set; }
     }
 }

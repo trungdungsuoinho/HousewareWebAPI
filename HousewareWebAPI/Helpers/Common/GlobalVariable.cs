@@ -27,5 +27,20 @@
 
         // VNPay
         public static string VNPContent(string orderId) => string.Format("Housware thanh toán đơn hàng {0}", orderId);
+
+        // Discount
+        public enum DiscountRange
+        {
+            Global,
+            Classification,
+            Category,
+            Product
+        }
+
+        public enum DiscountType
+        {
+            Direct,
+            Percentage
+        }
     }
 }

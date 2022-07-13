@@ -191,3 +191,6 @@ SELECT OrderStatus, COUNT(*) FROM Orders GROUP BY OrderStatus
 UPDATE Orders SET OrderStatus = 'PRSS' WHERE OrderStatus = 'PAED'
 
 SELECT * FROM Orders WHERE PaymentType = 'ONL' AND OrderCode iS NOT NULL Order by OrderDate desc;
+
+
+SELECT * FROM Customers
