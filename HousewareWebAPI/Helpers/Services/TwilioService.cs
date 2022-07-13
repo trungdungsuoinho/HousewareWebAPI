@@ -10,7 +10,7 @@ namespace HousewareWebAPI.Helpers.Services
     {
         public VerificationResource SendVerification(string phone);
         public VerificationCheckResource CheckVerification(string phone, string code);
-        public object SendSMS(string phone, string content);
+        public MessageResource SendSMS(string phone, string content);
     }
 
     public class TwilioService : ITwilioService
@@ -46,14 +46,14 @@ namespace HousewareWebAPI.Helpers.Services
             return verificationCheck;
         }
 
-        public object SendSMS(string phone, string content)
+        public MessageResource SendSMS(string phone, string content)
         {
             TwilioClient.Init(_appSettings.TwilioAccountSID, Utils.Decrypt(_appSettings.TwilioAuthToken));
 
             var message = MessageResource.Create(
                 body: content,
-                from: new Twilio.Types.PhoneNumber(_appSettings.TwilioPhoneNumber),
-                to: new Twilio.Types.PhoneNumber(phone)
+                from: new Twilio.Types.PhoneNumber(Utils.ParseInternationalPhoneNumber(_appSettings.TwilioPhoneNumber)),
+                to: new Twilio.Types.PhoneNumber(Utils.ParseInternationalPhoneNumber(phone))
             );
             return message;
         }

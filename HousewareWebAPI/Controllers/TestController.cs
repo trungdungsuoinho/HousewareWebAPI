@@ -58,7 +58,7 @@ namespace HousewareWebAPI.Controllers
         public IActionResult SendMail()
         {
             Response response = new();
-            _sendGridService.TestSendMail();
+            _sendGridService.SendMail();
             response.SetCode(CodeTypes.Success);
             if (response == null) return BadRequest(CodeTypes.Err_Unknown);
             if (response.ResultCode != CodeTypes.Success.ResultCode) return BadRequest(response);
